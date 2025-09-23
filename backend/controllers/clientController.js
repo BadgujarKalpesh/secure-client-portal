@@ -1,27 +1,41 @@
 const Client = require('../models/ClientSchema');
+const cloudinary = require('cloudinary').v2; // Import Cloudinary directly
+
 
 // @desc    Create a new client
 const createClient = async (req, res) => {
+    console.log('Request Body:', req.body)
     try {
-        // Text fields are in req.body
-        const clientData = { ...req.body };
+        // We receive a normal JSON body. The document is in req.body.documents
+        const { documents, ...textData } = req.body;
+        const clientData = { ...textData, documents: [] };
 
-        // Uploaded file info is in req.files
-        if (req.files) {
-            clientData.documents = req.files.map(file => ({
-                url: file.path, // The secure URL from Cloudinary
-                public_id: file.filename // The public ID from Cloudinary
-            }));
+        // Check if there are any documents to upload
+        if (documents && documents.length > 0) {
+            for (const doc of documents) {
+                // Upload the Base64 string directly to Cloudinary
+                const uploadedResponse = await cloudinary.uploader.upload(doc, {
+                    folder: 'kyc_documents',
+                    resource_type: 'auto' // Let Cloudinary detect the file type
+                });
+
+                clientData.documents.push({
+                    url: uploadedResponse.secure_url,
+                    public_id: uploadedResponse.public_id
+                });
+            }
         }
 
         const newClient = new Client(clientData);
         await newClient.save();
-
         res.status(201).json(newClient);
+
     } catch (error) {
-        res.status(400).json({ message: 'Error creating client', error: error.message });
+        console.error('--- ERROR CREATING CLIENT (Base64) ---', error);
+        res.status(500).json({ message: 'Server error while creating client', error: error.message });
     }
 };
+
 
 // @desc    Get all clients
 const getAllClients = async (req, res) => {

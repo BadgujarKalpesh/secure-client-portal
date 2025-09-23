@@ -1,4 +1,4 @@
-// frontend/src/components/CreateClientForm.jsx
+// frontend/src/components/Clients/CreateClientForm.jsx
 
 import React, { useState } from 'react';
 import api from '../../api/axiosConfig'; // Your pre-configured axios instance
@@ -15,6 +15,7 @@ function CreateClientForm({ onClientAdded }) {
     fssaiCode: ''
   });
   const [files, setFiles] = useState([]);
+  const [message, setMessage] = useState('');
 
   const handleTextChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -24,10 +25,10 @@ function CreateClientForm({ onClientAdded }) {
     setFiles(e.target.files);
   };
 
-  const handleSubmit = async (e) => {
+  // UPDATED: handleSubmit now uses .then() and .catch()
+  const handleSubmit = (e) => {
     e.preventDefault();
-
-    // We must use FormData to send files
+    setMessage('');
     const data = new FormData();
 
     // Append all text fields
@@ -37,46 +38,76 @@ function CreateClientForm({ onClientAdded }) {
 
     // Append all files
     for (let i = 0; i < files.length; i++) {
-        // The key 'documents' MUST match the backend route's middleware name
-        data.append('documents', files[i]);
+      data.append('documents', files[i]);
     }
 
-    try {
-      const response = await api.post('/clients', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      });
-      onClientAdded(response.data);
-      // Reset form or give success message
-    } catch (error) {
+    // The api.post call returns a promise
+    api.post('/clients', data)
+    .then(response => {
+      // This .then() block handles the successful response
+      if (onClientAdded) {
+        onClientAdded(response.data);
+      }
+      setMessage('Client created successfully!');
+      setFormData({ fullName: '', contactNumber: '', email: '', address: '', businessName: '', gstNumber: '', panNumber: '', fssaiCode: '' });
+      setFiles([]);
+      e.target.reset(); // Clears the file input
+    })
+    .catch(error => {
+      // This .catch() block handles any errors
       console.error('Error creating client:', error);
-    }
+      setMessage('Error creating client. Please check the console.');
+    });
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Basic Information */}
-      <input name="fullName" value={formData.fullName} onChange={handleTextChange} placeholder="Full Name" required />
-      <input name="contactNumber" value={formData.contactNumber} onChange={handleTextChange} placeholder="Contact Number" required />
-      <input name="email" type="email" value={formData.email} onChange={handleTextChange} placeholder="Email ID" required />
-      <input name="address" value={formData.address} onChange={handleTextChange} placeholder="Address" />
-      
-      {/* Business Information */}
-      <input name="businessName" value={formData.businessName} onChange={handleTextChange} placeholder="Business Name" />
-      <input name="gstNumber" value={formData.gstNumber} onChange={handleTextChange} placeholder="GST Number" />
-      <input name="panNumber" value={formData.panNumber} onChange={handleTextChange} placeholder="PAN Number" />
+        <h3>Basic Information</h3>
+        <div className="form-group">
+            <label>Full Name</label>
+            <input name="fullName" value={formData.fullName} onChange={handleTextChange} placeholder="Full Name" required className="form-control" />
+        </div>
+        <div className="form-group">
+            <label>Contact Number</label>
+            <input name="contactNumber" value={formData.contactNumber} onChange={handleTextChange} placeholder="Contact Number" required className="form-control" />
+        </div>
+        <div className="form-group">
+            <label>Email ID</label>
+            <input name="email" type="email" value={formData.email} onChange={handleTextChange} placeholder="Email ID" required className="form-control" />
+        </div>
+        <div className="form-group">
+            <label>Address</label>
+            <input name="address" value={formData.address} onChange={handleTextChange} placeholder="Address" className="form-control" />
+        </div>
+        
+        <h3>Business Information</h3>
+        <div className="form-group">
+            <label>Business Name</label>
+            <input name="businessName" value={formData.businessName} onChange={handleTextChange} placeholder="Business Name" className="form-control" />
+        </div>
+        <div className="form-group">
+            <label>GST Number</label>
+            <input name="gstNumber" value={formData.gstNumber} onChange={handleTextChange} placeholder="GST Number" className="form-control" />
+        </div>
+        <div className="form-group">
+            <label>PAN Number</label>
+            <input name="panNumber" value={formData.panNumber} onChange={handleTextChange} placeholder="PAN Number" className="form-control" />
+        </div>
 
-      {/* Other Details */}
-      <input name="fssaiCode" value={formData.fssaiCode} onChange={handleTextChange} placeholder="FSSAI Code" />
+        <h3>Other Details</h3>
+        <div className="form-group">
+            <label>FSSAI Code</label>
+            <input name="fssaiCode" value={formData.fssaiCode} onChange={handleTextChange} placeholder="FSSAI Code" className="form-control" />
+        </div>
 
-      {/* File Upload */}
-      <div>
-        <label>KYC Documents (PDF, JPG, PNG)</label>
-        <input type="file" onChange={handleFileChange} multiple />
-      </div>
+        <div className="form-group">
+            <label>KYC Documents (PDF, JPG, PNG)</label>
+            <input type="file" onChange={handleFileChange} multiple className="form-control" />
+        </div>
 
-      <button type="submit">Create Client</button>
+        {message && <div className="message success">{message}</div>}
+
+        <button type="submit" className="btn btn-primary" style={{ marginTop: '20px' }}>Create Client</button>
     </form>
   );
 }
