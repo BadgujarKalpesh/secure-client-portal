@@ -1,27 +1,21 @@
-const Client = require('../models/ClientSchema');
-const cloudinary = require('cloudinary').v2; // Import Cloudinary directly
+// backend/controllers/clientController.js
 
+const Client = require('../models/ClientSchema');
+const cloudinary = require('cloudinary').v2;
 
 // @desc    Create a new client
 const createClient = async (req, res) => {
-    console.log('Request Body:', req.body)
+    console.log("req.body : ", JSON.stringify(req.body))
     try {
-        // We receive a normal JSON body. The document is in req.body.documents
-        const { documents, ...textData } = req.body;
+        const { ...textData } = req.body;
         const clientData = { ...textData, documents: [] };
 
         // Check if there are any documents to upload
-        if (documents && documents.length > 0) {
-            for (const doc of documents) {
-                // Upload the Base64 string directly to Cloudinary
-                const uploadedResponse = await cloudinary.uploader.upload(doc, {
-                    folder: 'kyc_documents',
-                    resource_type: 'auto' // Let Cloudinary detect the file type
-                });
-
+        if (req.files && req.files.length > 0) {
+            for (const file of req.files) {
                 clientData.documents.push({
-                    url: uploadedResponse.secure_url,
-                    public_id: uploadedResponse.public_id
+                    url: file.path, // The secure_url from Cloudinary
+                    public_id: file.filename // The public_id from Cloudinary
                 });
             }
         }
@@ -31,7 +25,8 @@ const createClient = async (req, res) => {
         res.status(201).json(newClient);
 
     } catch (error) {
-        console.error('--- ERROR CREATING CLIENT (Base64) ---', error);
+        console.error('--- ERROR CREATING CLIENT ---', error);
+        // Send a more informative error response
         res.status(500).json({ message: 'Server error while creating client', error: error.message });
     }
 };
@@ -124,5 +119,5 @@ module.exports = {
     getClientById,
     updateClient,
     deleteClient,
-    updateClientStatus, 
+    updateClientStatus,
 };

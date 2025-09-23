@@ -11,8 +11,9 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'kyc_documents', // Folder name in Cloudinary
-    allowed_formats: ['jpeg', 'png', 'jpg', 'pdf']
+    folder: 'kyc_documents',
+    allowed_formats: ['jpeg', 'png', 'jpg', 'pdf'],
+    resource_type: 'auto' // <-- ADD THIS LINE
   }
 });
 
