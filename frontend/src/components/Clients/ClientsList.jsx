@@ -1,33 +1,47 @@
 import React from 'react';
 
-const ClientList = ({ clients }) => {
+const EditIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
+
+const ClientsList = ({ clients, onEditClick }) => {
     return (
-        <div style={{ padding: '20px', border: '1px solid #eee' }}>
+        <>
             <h3>Current Clients</h3>
             {clients.length === 0 ? (
-                <p>No clients found. Add one using the form.</p>
+                <p>No clients found.</p>
             ) : (
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <table className="client-table">
                     <thead>
-                        <tr style={{ borderBottom: '1px solid #ccc' }}>
-                            <th style={{ textAlign: 'left', padding: '8px' }}>Full Name</th>
-                            <th style={{ textAlign: 'left', padding: '8px' }}>Email</th>
-                            <th style={{ textAlign: 'left', padding: '8px' }}>Contact Number</th>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {clients.map((client) => (
-                            <tr key={client._id} style={{ borderBottom: '1px solid #eee' }}>
-                                <td style={{ padding: '8px' }}>{client.fullName}</td>
-                                <td style={{ padding: '8px' }}>{client.email}</td>
-                                <td style={{ padding: '8px' }}>{client.contactNumber}</td>
+                            <tr key={client._id}>
+                                <td>{client.fullName}</td>
+                                <td>{client.email}</td>
+                                <td>
+                                    <span className={`status-badge status-${client.status}`}>
+                                        {client.status}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div className="action-icons">
+                                        <button onClick={() => onEditClick(client)} title="Edit Details">
+                                            <EditIcon />
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             )}
-        </div>
+        </>
     );
 };
 
-export default ClientList;
+export default ClientsList;

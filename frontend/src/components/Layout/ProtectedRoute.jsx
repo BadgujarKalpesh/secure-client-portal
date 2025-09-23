@@ -3,7 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 const ProtectedRoute = () => {
-    const { user, token } = useAuth();
+    const { token } = useAuth();
 
     // Check if token exists, as user state might be set async
     if (!token) {

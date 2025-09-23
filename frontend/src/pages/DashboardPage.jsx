@@ -1,46 +1,41 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useAuth } from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
-import CreateClientForm from '../components/Clients/CreateClientForm';
-import ClientList from '../components/Clients/ClientsList';
-import MfaSetup from '../components/Auth/MfaSetup';
 
 const DashboardPage = () => {
-    const { user, logout } = useAuth();
-    const [clients, setClients] = useState([]);
-
-    const fetchClients = useCallback(async () => {
-        try {
-            const response = await api.get('/clients');
-            setClients(response.data);
-        } catch (error) {
-            console.error("Failed to fetch clients:", error);
-        }
-    }, []);
+    const [stats, setStats] = useState({ total: 0, approved: 0, rejected: 0 });
 
     useEffect(() => {
+        const fetchClients = async () => {
+            try {
+                const response = await api.get('/clients');
+                const clients = response.data;
+                const approved = clients.filter(c => c.status === 'Approved').length;
+                const rejected = clients.filter(c => c.status === 'Rejected').length;
+                setStats({ total: clients.length, approved, rejected });
+            } catch (error) {
+                console.error("Failed to fetch clients:", error);
+            }
+        };
         fetchClients();
-    }, [fetchClients]);
+    }, []);
 
     return (
-        <div style={{ padding: '20px', maxWidth: '1000px', margin: '0 auto' }}>
-            <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', paddingBottom: '10px' }}>
-                <h1>Admin Dashboard</h1>
-                <div>
-                    <span style={{ marginRight: '15px' }}>Welcome, {user?.username || 'Admin'}!</span>
-                    <button onClick={logout}>Logout</button>
+        <div>
+            <h1>Dashboard</h1>
+            <div className="dashboard-stats">
+                <div className="stats-card total">
+                    <h2>Total Clients</h2>
+                    <div className="count">{stats.total}</div>
                 </div>
-            </header>
-            
-            <main style={{ display: 'flex', gap: '40px', marginTop: '20px' }}>
-                <div style={{ flex: 2 }}>
-                    <ClientList clients={clients} />
+                <div className="stats-card approved">
+                    <h2>Approved Clients</h2>
+                    <div className="count">{stats.approved}</div>
                 </div>
-                <div style={{ flex: 1 }}>
-                    <CreateClientForm onClientCreated={fetchClients} />
-                    <MfaSetup />
+                <div className="stats-card rejected">
+                    <h2>Rejected Clients</h2>
+                    <div className="count">{stats.rejected}</div>
                 </div>
-            </main>
+            </div>
         </div>
     );
 };

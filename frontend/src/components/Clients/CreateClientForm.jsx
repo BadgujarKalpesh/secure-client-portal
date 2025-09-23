@@ -1,63 +1,84 @@
+// frontend/src/components/CreateClientForm.jsx
+
 import React, { useState } from 'react';
-import api from '../../api/axiosConfig';
+import api from '../../api/axiosConfig'; // Your pre-configured axios instance
 
-const CreateClientForm = ({ onClientCreated }) => {
-    const [fullName, setFullName] = useState('');
-    const [email, setEmail] = useState('');
-    const [contactNumber, setContactNumber] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+function CreateClientForm({ onClientAdded }) {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    contactNumber: '',
+    email: '',
+    address: '',
+    businessName: '',
+    gstNumber: '',
+    panNumber: '',
+    fssaiCode: ''
+  });
+  const [files, setFiles] = useState([]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        setSuccess('');
+  const handleTextChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-        const clientData = {
-            fullName,
-            email,
-            contactNumber,
-        };
+  const handleFileChange = (e) => {
+    setFiles(e.target.files);
+  };
 
-        try {
-            const response = await api.post('/clients', clientData);
-            setSuccess(`Client "${response.data.fullName}" created successfully!`);
-            
-            setFullName('');
-            setEmail('');
-            setContactNumber('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-            if (onClientCreated) {
-                onClientCreated();
-            }
+    // We must use FormData to send files
+    const data = new FormData();
 
-        } catch (err) {
-            setError(err.response?.data?.message || 'Failed to create client.');
+    // Append all text fields
+    for (const key in formData) {
+      data.append(key, formData[key]);
+    }
+
+    // Append all files
+    for (let i = 0; i < files.length; i++) {
+        // The key 'documents' MUST match the backend route's middleware name
+        data.append('documents', files[i]);
+    }
+
+    try {
+      const response = await api.post('/clients', data, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
         }
-    };
+      });
+      onClientAdded(response.data);
+      // Reset form or give success message
+    } catch (error) {
+      console.error('Error creating client:', error);
+    }
+  };
 
-    return (
-        <div style={{ padding: '20px', border: '1px solid #eee', marginTop: '20px' }}>
-            <h3>Create New Client</h3>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Full Name: </label>
-                    <input type="text" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
-                </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Email: </label>
-                    <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-                <div style={{ marginBottom: '10px' }}>
-                    <label>Contact Number: </label>
-                    <input type="text" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} required />
-                </div>
-                {error && <p style={{ color: 'red' }}>{error}</p>}
-                {success && <p style={{ color: 'green' }}>{success}</p>}
-                <button type="submit">Create Client</button>
-            </form>
-        </div>
-    );
-};
+  return (
+    <form onSubmit={handleSubmit}>
+      {/* Basic Information */}
+      <input name="fullName" value={formData.fullName} onChange={handleTextChange} placeholder="Full Name" required />
+      <input name="contactNumber" value={formData.contactNumber} onChange={handleTextChange} placeholder="Contact Number" required />
+      <input name="email" type="email" value={formData.email} onChange={handleTextChange} placeholder="Email ID" required />
+      <input name="address" value={formData.address} onChange={handleTextChange} placeholder="Address" />
+      
+      {/* Business Information */}
+      <input name="businessName" value={formData.businessName} onChange={handleTextChange} placeholder="Business Name" />
+      <input name="gstNumber" value={formData.gstNumber} onChange={handleTextChange} placeholder="GST Number" />
+      <input name="panNumber" value={formData.panNumber} onChange={handleTextChange} placeholder="PAN Number" />
+
+      {/* Other Details */}
+      <input name="fssaiCode" value={formData.fssaiCode} onChange={handleTextChange} placeholder="FSSAI Code" />
+
+      {/* File Upload */}
+      <div>
+        <label>KYC Documents (PDF, JPG, PNG)</label>
+        <input type="file" onChange={handleFileChange} multiple />
+      </div>
+
+      <button type="submit">Create Client</button>
+    </form>
+  );
+}
 
 export default CreateClientForm;
