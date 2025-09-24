@@ -51,6 +51,8 @@ const MfaSetup = () => {
                             placeholder="6-Digit Code"
                             className="form-control"
                         />
+                        <br/>
+                        <br/>
                         <button onClick={handleVerify} className="btn btn-primary" style={{width: 'auto'}}>Verify</button>
                     </div>
                 </div>

@@ -20,8 +20,9 @@ const ClientsList = ({ clients, onEditClick }) => {
                     </thead>
                     <tbody>
                         {clients.map((client) => (
-                            <tr key={client._id}>
-                                <td>{client.fullName}</td>
+                            // Use client.id instead of client._id for the key
+                            <tr key={client.id}>
+                                <td>{client.full_name}</td>
                                 <td>{client.email}</td>
                                 <td>
                                     <span className={`status-badge status-${client.status}`}>

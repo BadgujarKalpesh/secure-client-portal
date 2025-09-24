@@ -360,3 +360,32 @@ body {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 20px;
 }
+
+
+/* --- Add these styles to the end of your Modern.css file --- */
+
+/* Wider modal for forms with more fields */
+.modal-lg {
+    width: 800px;
+    max-width: 95%;
+}
+
+/* Make the modal body scrollable on smaller heights */
+.modal-body {
+    max-height: 65vh;
+    overflow-y: auto;
+}
+
+/* Style for section headers inside forms */
+.form-section-header {
+    margin-top: 20px;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    color: var(--primary-blue);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.form-section-header:first-of-type {
+    margin-top: 0;
+}
