@@ -8,6 +8,7 @@ import ClientsListPage from './pages/ClientsListPage';
 import CreateClientPage from './pages/CreateClientPage';
 import MfaSettingsPage from './pages/MfaSettingsPage';
 import ViewersPage from './pages/ViewersPage';
+import ViewerMfaSettingsPage from './pages/ViewerMfaSettingsPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/clients/create" element={<CreateClientPage />} />
           <Route path="/viewers" element={<ViewersPage />} />
           <Route path="/settings/mfa" element={<MfaSettingsPage />} />
+          <Route path="/settings/viewer-mfa" element={<ViewerMfaSettingsPage />} />
         </Route>
       </Route>
 

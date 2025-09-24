@@ -21,8 +21,17 @@ const findAll = async () => {
     return rows;
 };
 
+
+const findById = async (id) => {
+    const query = 'SELECT id, username, mfa_secret, is_mfa_enabled, mfa_temp_secret FROM viewers WHERE id = $1';
+    const { rows } = await pool.query(query, [id]);
+    return rows[0];
+};
+
+
 module.exports = {
     create,
     findByUsername,
     findAll,
+    findById, 
 };
