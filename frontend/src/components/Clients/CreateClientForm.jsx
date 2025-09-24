@@ -1,7 +1,7 @@
 // frontend/src/components/Clients/CreateClientForm.jsx
 
 import React, { useState } from 'react';
-import api from '../../api/axiosConfig'; // Your pre-configured axios instance
+import api from '../../api/axiosConfig';
 
 function CreateClientForm({ onClientAdded }) {
   const [formData, setFormData] = useState({
@@ -25,36 +25,30 @@ function CreateClientForm({ onClientAdded }) {
     setFiles(e.target.files);
   };
 
-  // UPDATED: handleSubmit now uses .then() and .catch()
   const handleSubmit = (e) => {
     e.preventDefault();
     setMessage('');
     const data = new FormData();
 
-    // Append all text fields
     for (const key in formData) {
       data.append(key, formData[key]);
     }
 
-    // Append all files
     for (let i = 0; i < files.length; i++) {
       data.append('documents', files[i]);
     }
 
-    // The api.post call returns a promise
     api.post('/clients', data)
     .then(response => {
-      // This .then() block handles the successful response
       if (onClientAdded) {
         onClientAdded(response.data);
       }
       setMessage('Client created successfully!');
       setFormData({ fullName: '', contactNumber: '', email: '', address: '', businessName: '', gstNumber: '', panNumber: '', fssaiCode: '' });
       setFiles([]);
-      e.target.reset(); // Clears the file input
+      e.target.reset();
     })
     .catch(error => {
-      // This .catch() block handles any errors
       console.error('Error creating client:', error);
       setMessage('Error creating client. Please check the console.');
     });
@@ -63,41 +57,47 @@ function CreateClientForm({ onClientAdded }) {
   return (
     <form onSubmit={handleSubmit}>
         <h3>Basic Information</h3>
-        <div className="form-group">
-            <label>Full Name</label>
-            <input name="fullName" value={formData.fullName} onChange={handleTextChange} placeholder="Full Name" required className="form-control" />
-        </div>
-        <div className="form-group">
-            <label>Contact Number</label>
-            <input name="contactNumber" value={formData.contactNumber} onChange={handleTextChange} placeholder="Contact Number" required className="form-control" />
-        </div>
-        <div className="form-group">
-            <label>Email ID</label>
-            <input name="email" type="email" value={formData.email} onChange={handleTextChange} placeholder="Email ID" required className="form-control" />
-        </div>
-        <div className="form-group">
-            <label>Address</label>
-            <input name="address" value={formData.address} onChange={handleTextChange} placeholder="Address" className="form-control" />
+        <div className="form-grid">
+            <div className="form-group">
+                <label>Full Name</label>
+                <input name="fullName" value={formData.fullName} onChange={handleTextChange} placeholder="Full Name" required className="form-control" />
+            </div>
+            <div className="form-group">
+                <label>Contact Number</label>
+                <input name="contactNumber" value={formData.contactNumber} onChange={handleTextChange} placeholder="Contact Number" required className="form-control" />
+            </div>
+            <div className="form-group">
+                <label>Email ID</label>
+                <input name="email" type="email" value={formData.email} onChange={handleTextChange} placeholder="Email ID" required className="form-control" />
+            </div>
+            <div className="form-group">
+                <label>Address</label>
+                <input name="address" value={formData.address} onChange={handleTextChange} placeholder="Address" className="form-control" />
+            </div>
         </div>
         
         <h3>Business Information</h3>
-        <div className="form-group">
-            <label>Business Name</label>
-            <input name="businessName" value={formData.businessName} onChange={handleTextChange} placeholder="Business Name" className="form-control" />
-        </div>
-        <div className="form-group">
-            <label>GST Number</label>
-            <input name="gstNumber" value={formData.gstNumber} onChange={handleTextChange} placeholder="GST Number" className="form-control" />
-        </div>
-        <div className="form-group">
-            <label>PAN Number</label>
-            <input name="panNumber" value={formData.panNumber} onChange={handleTextChange} placeholder="PAN Number" className="form-control" />
+        <div className="form-grid">
+            <div className="form-group">
+                <label>Business Name</label>
+                <input name="businessName" value={formData.businessName} onChange={handleTextChange} placeholder="Business Name" className="form-control" />
+            </div>
+            <div className="form-group">
+                <label>GST Number</label>
+                <input name="gstNumber" value={formData.gstNumber} onChange={handleTextChange} placeholder="GST Number" className="form-control" />
+            </div>
+            <div className="form-group">
+                <label>PAN Number</label>
+                <input name="panNumber" value={formData.panNumber} onChange={handleTextChange} placeholder="PAN Number" className="form-control" />
+            </div>
         </div>
 
         <h3>Other Details</h3>
-        <div className="form-group">
-            <label>FSSAI Code</label>
-            <input name="fssaiCode" value={formData.fssaiCode} onChange={handleTextChange} placeholder="FSSAI Code" className="form-control" />
+        <div className="form-grid">
+            <div className="form-group">
+                <label>FSSAI Code</label>
+                <input name="fssaiCode" value={formData.fssaiCode} onChange={handleTextChange} placeholder="FSSAI Code" className="form-control" />
+            </div>
         </div>
 
         <div className="form-group">
