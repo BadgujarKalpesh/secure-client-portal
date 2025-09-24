@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import api from '../../api/axiosConfig';
 
-const MfaSetup = () => {
+const MfaSetup = ({ setupUrl, enableUrl, userType }) => {
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [mfaToken, setMfaToken] = useState('');
     const [message, setMessage] = useState('');
@@ -11,9 +11,9 @@ const MfaSetup = () => {
         setError('');
         setMessage('');
         try {
-            const response = await api.get('/auth/mfa/setup');
+            const response = await api.get(setupUrl); // Use prop
             setQrCodeUrl(response.data.qrCodeUrl);
-        } catch  {
+        } catch {
             setError('Could not start MFA setup.');
         }
     };
@@ -22,7 +22,7 @@ const MfaSetup = () => {
         setError('');
         setMessage('');
         try {
-            const response = await api.post('/auth/mfa/enable', { mfaToken });
+            const response = await api.post(enableUrl, { mfaToken }); // Use prop
             setMessage(response.data.message);
             setQrCodeUrl(''); 
         } catch (err) {
@@ -32,7 +32,7 @@ const MfaSetup = () => {
 
     return (
         <div className="mfa-setup">
-            <h3>Multi-Factor Authentication</h3>
+            <h3>{userType} MFA Setup</h3>
             {!qrCodeUrl ? (
                 <>
                     <p>Enhance your account security by enabling MFA.</p>

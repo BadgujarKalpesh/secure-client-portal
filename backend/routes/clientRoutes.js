@@ -9,23 +9,24 @@ const {
     updateClientStatus,
 } = require('../controllers/clientController');
 const upload = require('../config/cloudinary');
-const { protect } = require('../middleware/authMiddleware');
+// Import both middleware
+const { protect, adminOnly } = require('../middleware/authMiddleware');
 
-// Apply authentication middleware to all client routes
+// All client routes require a user to be logged in
 router.use(protect);
 
-// --- NEW, SIMPLIFIED ROUTE DEFINITIONS ---
-
-// GET /api/clients - Fetches all clients
+// Routes for creating and getting all clients
 router.route('/')
-    .post(upload.array('documents', 5), createClient) // This line is crucial
-    .get(getAllClients);
-// This handles status updates for a specific client
-router.put('/:id/status', updateClientStatus);
+    .post(adminOnly, upload.array('documents', 5), createClient) // Only admins can create
+    .get(getAllClients); // Admins and Viewers can get all clients
 
-// These routes handle actions for a single client by their ID
-router.get('/:id', getClientById);
-router.put('/:id', updateClient);
-router.delete('/:id', deleteClient);
+// Routes for a single client by ID
+router.route('/:id')
+    .get(getClientById) // Admins and Viewers can get a single client
+    .put(adminOnly, updateClient) // Only admins can update
+    .delete(adminOnly, deleteClient); // Only admins can delete
+
+// Route for status updates
+router.put('/:id/status', adminOnly, updateClientStatus); // Only admins can change status
 
 module.exports = router;

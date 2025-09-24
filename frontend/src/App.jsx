@@ -7,6 +7,7 @@ import DashboardPage from './pages/DashboardPage';
 import ClientsListPage from './pages/ClientsListPage';
 import CreateClientPage from './pages/CreateClientPage';
 import MfaSettingsPage from './pages/MfaSettingsPage';
+import ViewersPage from './pages/ViewersPage';
 
 function App() {
   return (
@@ -18,7 +19,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/clients" element={<ClientsListPage />} />
           <Route path="/clients/create" element={<CreateClientPage />} />
-          {/* The EditClientPage route is no longer needed */}
+          <Route path="/viewers" element={<ViewersPage />} />
           <Route path="/settings/mfa" element={<MfaSettingsPage />} />
         </Route>
       </Route>

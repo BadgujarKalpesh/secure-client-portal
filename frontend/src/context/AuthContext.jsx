@@ -5,22 +5,27 @@ import api from '../api/axiosConfig';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
+    // The user state will now hold the full user object including the role
     const [user, setUser] = useState(null);
-    const [token, setToken] = useState(() => localStorage.getItem('token')); // Lazy initializer
+    const [token, setToken] = useState(() => localStorage.getItem('token'));
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (token) {
-            api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-            setUser({ username: 'admin' }); // In a real app, you'd fetch user details
-        } else {
-            setUser(null);
+        const storedToken = localStorage.getItem('token');
+        const storedUser = localStorage.getItem('user');
+        if (storedToken && storedUser) {
+            setToken(storedToken);
+            setUser(JSON.parse(storedUser));
+            api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
         }
-    }, [token]);
+    }, []);
 
-    const login = async (newToken) => {
-        setToken(newToken);
-        localStorage.setItem('token', newToken);
+    const login = (token, userData) => {
+        setToken(token);
+        setUser(userData);
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         navigate('/dashboard');
     };
 
@@ -28,6 +33,7 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setToken(null);
         localStorage.removeItem('token');
+        localStorage.removeItem('user');
         delete api.defaults.headers.common['Authorization'];
         navigate('/login');
     };

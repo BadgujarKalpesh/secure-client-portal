@@ -22,9 +22,11 @@ app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.json());
 
 // --- API Routes ---
-// Mount the route handlers
+
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/clients', require('./routes/clientRoutes'));
+app.use('/api/viewers', require('./routes/viewerRoutes')); 
+
 
 
 app.get('/', (req, res) => {

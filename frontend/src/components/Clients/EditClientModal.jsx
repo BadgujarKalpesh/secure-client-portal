@@ -1,23 +1,16 @@
 import React, { useState } from 'react';
 import api from '../../api/axiosConfig';
+import { useAuth } from '../../context/AuthContext'; // Import useAuth
 
 const EditClientModal = ({ client, onClose, onUpdate }) => {
-    // Note: PostgreSQL returns snake_case column names.
-    // The initial state should match the data structure from your API.
-    const [formData, setFormData] = useState({
-        id: client.id || '',
-        full_name: client.full_name || '',
-        email: client.email || '',
-        contact_number: client.contact_number || '',
-        address: client.address || '',
-        business_name: client.business_name || '',
-        gst_number: client.gst_number || '',
-        pan_number: client.pan_number || '',
-        fssai_code: client.fssai_code || ''
-    });
+    const { user } = useAuth(); // Get the current user
+    const isAdmin = user?.role === 'admin'; // Check if the user is an admin\
+
+    const [formData, setFormData] = useState({ ...client });
     const [error, setError] = useState('');
 
     const handleChange = (e) => {
+        if (!isAdmin) return; // Prevent changes if not admin
         const { name, value } = e.target;
         setFormData(prevState => ({ ...prevState, [name]: value }));
     };
@@ -56,16 +49,16 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
 
     return (
         <div className="modal-backdrop" onClick={onClose}>
-            {/* Added modal-lg for a wider modal */}
             <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h3>Edit Client: {formData.full_name}</h3>
+                    <h3>{isAdmin ? 'Edit Client' : 'View Client'}: {formData.full_name}</h3>
                     <button onClick={onClose} className="close-button">&times;</button>
                 </div>
-                <form onSubmit={handleSaveChanges}>
+                {/* Prevent form submission if not an admin */}
+                <form onSubmit={isAdmin ? handleSaveChanges : (e) => e.preventDefault()}>
                     <div className="modal-body">
                         {/* Section for Basic Info */}
-                        <h4 className="form-section-header">Basic Information</h4>
+                        {/* <h4 className="form-section-header">Basic Information</h4> */}
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Full Name</label>
@@ -109,11 +102,19 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                         {error && <div className="message error" style={{ color: 'red', marginTop: '15px' }}>{error}</div>}
                     </div>
                     <div className="modal-footer">
-                        <div className="status-buttons">
-                            <button type="button" className="btn btn-success" onClick={() => handleStatusChange('Approved')}>Approve</button>
-                            <button type="button" className="btn btn-danger" onClick={() => handleStatusChange('Rejected')}>Reject</button>
-                        </div>
-                        <button type="submit" className="btn btn-primary">Save Changes</button>
+                        {/* Only show action buttons to admins */}
+                        {isAdmin && (
+                            <>
+                                <div className="status-buttons">
+                                    <button type="button" className="btn btn-success" onClick={() => handleStatusChange('Approved')}>Approve</button>
+                                    <button type="button" className="btn btn-danger" onClick={() => handleStatusChange('Rejected')}>Reject</button>
+                                </div>
+                                <button type="submit" className="btn btn-primary">Save Changes</button>
+                            </>
+                        )}
+                        {!isAdmin && (
+                            <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
+                        )}
                     </div>
                 </form>
             </div>
