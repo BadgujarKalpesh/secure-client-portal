@@ -1,7 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
 const cors = require('cors'); // Make sure cors is imported
-const connectDB = require('./config/db');
+const {connectDB} = require('./config/db');
 
 dotenv.config();
 connectDB();
