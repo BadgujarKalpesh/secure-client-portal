@@ -2,21 +2,22 @@ import React, { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
 
 const DashboardPage = () => {
-    const [stats, setStats] = useState({ total: 0, approved: 0, rejected: 0 });
+    const [stats, setStats] = useState({
+        clients: { total: 0, approved: 0, rejected: 0 },
+        viewers: { total: 0 }
+    });
 
     useEffect(() => {
-        const fetchClients = async () => {
+        const fetchStats = async () => {
             try {
-                const response = await api.get('/clients');
-                const clients = response.data;
-                const approved = clients.filter(c => c.status === 'Approved').length;
-                const rejected = clients.filter(c => c.status === 'Rejected').length;
-                setStats({ total: clients.length, approved, rejected });
+                // Fetch from the new dedicated stats endpoint
+                const response = await api.get('/stats');
+                setStats(response.data);
             } catch (error) {
-                console.error("Failed to fetch clients:", error);
+                console.error("Failed to fetch stats:", error);
             }
         };
-        fetchClients();
+        fetchStats();
     }, []);
 
     return (
@@ -25,15 +26,19 @@ const DashboardPage = () => {
             <div className="dashboard-stats">
                 <div className="stats-card total">
                     <h2>Total Clients</h2>
-                    <div className="count">{stats.total}</div>
+                    <div className="count">{stats.clients.total}</div>
                 </div>
                 <div className="stats-card approved">
                     <h2>Approved Clients</h2>
-                    <div className="count">{stats.approved}</div>
+                    <div className="count">{stats.clients.approved}</div>
                 </div>
                 <div className="stats-card rejected">
                     <h2>Rejected Clients</h2>
-                    <div className="count">{stats.rejected}</div>
+                    <div className="count">{stats.clients.rejected}</div>
+                </div>
+                <div className="stats-card viewers">
+                    <h2>Total Viewers</h2>
+                    <div className="count">{stats.viewers.total}</div>
                 </div>
             </div>
         </div>

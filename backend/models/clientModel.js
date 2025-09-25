@@ -1,9 +1,23 @@
 const { pool } = require('../config/db');
 
 const create = async (clientData, documents) => {
+    const {
+        organisationName, organisationAddress, organisationDomainId, natureOfBusiness,
+        authorisedSignatoryFullName, authorisedSignatoryMobile, authorisedSignatoryEmail, authorisedSignatoryDesignation,
+        billingContactName, billingContactNumber, billingContactEmail, organisationType
+    } = clientData;
+
     const clientResult = await pool.query(
-        'INSERT INTO clients (full_name, contact_number, email, address, business_name, gst_number, pan_number, fssai_code) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *',
-        [clientData.fullName, clientData.contactNumber, clientData.email, clientData.address, clientData.businessName, clientData.gstNumber, clientData.panNumber, clientData.fssaiCode]
+        `INSERT INTO clients (
+            organisation_name, organisation_address, organisation_domain_id, nature_of_business,
+            authorised_signatory_full_name, authorised_signatory_mobile, authorised_signatory_email, authorised_signatory_designation,
+            billing_contact_name, billing_contact_number, billing_contact_email, organisation_type
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
+        [
+            organisationName, organisationAddress, organisationDomainId, natureOfBusiness,
+            authorisedSignatoryFullName, authorisedSignatoryMobile, authorisedSignatoryEmail, authorisedSignatoryDesignation,
+            billingContactName, billingContactNumber, billingContactEmail, organisationType
+        ]
     );
     const newClient = clientResult.rows[0];
 

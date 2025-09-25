@@ -389,3 +389,32 @@ body {
 .form-section-header:first-of-type {
     margin-top: 0;
 }
+
+/* Add to the end of Modern.css */
+.stats-card.viewers { background: linear-gradient(45deg, #6c757d, #343a40); }
+
+.multi-step-form-progress {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 25px;
+}
+.progress-step {
+    text-align: center;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+.progress-step.active {
+    color: var(--primary-blue);
+    font-weight: 700;
+}
+.form-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 25px;
+}
+.document-upload-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+}
