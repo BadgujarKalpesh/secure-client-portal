@@ -61,13 +61,19 @@ const LoginPage = () => {
                                     value={username} 
                                     onChange={(e) => setUsername(e.target.value)} 
                                     className="form-control"
-                                    placeholder={role === 'admin' ? 'Admin username' : 'Viewer username'}
+                                    placeholder={role === 'admin' ? 'Username' : 'Username'}
                                     required 
                                 />
                             </div>
                             <div className="form-group">
                                 <label>Password</label>
-                                <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="form-control" required />
+                                <input type="password" 
+                                    value={password} 
+                                    onChange={(e) => setPassword(e.target.value)} 
+                                    className="form-control"
+                                    placeholder={role === 'admin' ? 'Password' : 'Password'}
+                                    required
+                                 />
                             </div>
                             <button type="submit" className="btn btn-primary" style={{width: '100%'}}>Continue</button>
                         </>

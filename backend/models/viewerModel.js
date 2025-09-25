@@ -21,11 +21,23 @@ const findAll = async () => {
     return rows;
 };
 
-
+// ** ADD THIS FUNCTION (for authMiddleware) **
 const findById = async (id) => {
     const query = 'SELECT id, username, mfa_secret, is_mfa_enabled, mfa_temp_secret FROM viewers WHERE id = $1';
     const { rows } = await pool.query(query, [id]);
     return rows[0];
+};
+
+// ** ADD THIS FUNCTION (for MFA setup) **
+const updateMfaTempSecret = async (id, secret) => {
+    const query = 'UPDATE viewers SET mfa_temp_secret = $1 WHERE id = $2';
+    await pool.query(query, [secret, id]);
+};
+
+// ** ADD THIS FUNCTION (for MFA verification) **
+const enableMfa = async (id, secret) => {
+    const query = 'UPDATE viewers SET mfa_secret = $1, is_mfa_enabled = true, mfa_temp_secret = NULL WHERE id = $2';
+    await pool.query(query, [secret, id]);
 };
 
 
@@ -33,5 +45,7 @@ module.exports = {
     create,
     findByUsername,
     findAll,
-    findById, 
+    findById,
+    updateMfaTempSecret,
+    enableMfa,
 };

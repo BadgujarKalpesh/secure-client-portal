@@ -3,16 +3,14 @@ const bcrypt = require('bcryptjs');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const Admin = require('../models/adminModel');
-const Viewer = require('../models/viewerModel'); // Import the viewer model
+const Viewer = require('../models/viewerModel');
 
-// Generate JWT with user's ID, username, and ROLE
 const generateToken = (id, username, role) => {
     return jwt.sign({ id, username, role }, process.env.JWT_SECRET, {
         expiresIn: '1d',
     });
 };
 
-// ** NEW UNIFIED LOGIN FUNCTION **
 const loginUser = async (req, res) => {
     const { username, password, mfaToken, role } = req.body;
 
@@ -22,7 +20,6 @@ const loginUser = async (req, res) => {
 
     try {
         let user;
-        // Find the user in the correct table based on the role
         if (role === 'admin') {
             user = await Admin.findByUsername(username);
         } else if (role === 'viewer') {
@@ -57,7 +54,7 @@ const loginUser = async (req, res) => {
         res.status(200).json({
             message: 'Login successful',
             token: generateToken(user.id, user.username, role),
-            user: { username: user.username, role: role } // Send user info back
+            user: { username: user.username, role: role }
         });
 
     } catch (error) {
@@ -66,12 +63,12 @@ const loginUser = async (req, res) => {
     }
 };
 
-
 // Admin-specific MFA setup
 const setupAdminMfa = async (req, res) => {
     try {
-        const secret = speakeasy.generateSecret({ name: `SecurePortal (Admin: ${req.admin.username})` });
-        await Admin.updateMfaTempSecret(req.admin.id, secret.ascii);
+        // CHANGED: Use req.user instead of req.admin
+        const secret = speakeasy.generateSecret({ name: `SecurePortal (Admin: ${req.user.username})` });
+        await Admin.updateMfaTempSecret(req.user.id, secret.ascii);
 
         QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
             if (err) return res.status(500).json({ message: 'Error generating QR code' });
@@ -84,7 +81,8 @@ const setupAdminMfa = async (req, res) => {
 
 const verifyAndEnableAdminMfa = async (req, res) => {
     const { mfaToken } = req.body;
-    const admin = await Admin.findById(req.admin.id);
+    // CHANGED: Use req.user instead of req.admin
+    const admin = await Admin.findById(req.user.id);
 
     if (!admin.mfa_temp_secret) {
         return res.status(400).json({ message: 'MFA setup has not been initiated.' });
@@ -97,16 +95,15 @@ const verifyAndEnableAdminMfa = async (req, res) => {
     });
 
     if (isVerified) {
-        await Admin.enableMfa(admin.id, admin.mfa_temp_secret);
+        // CHANGED: Use req.user instead of req.admin
+        await Admin.enableMfa(req.user.id, admin.mfa_temp_secret);
         res.status(200).json({ message: 'MFA enabled successfully!' });
     } else {
         res.status(400).json({ message: 'Invalid MFA token.' });
     }
 };
 
-
 const setupViewerMfa = async (req, res) => {
-    // req.user is attached by the 'protect' middleware
     if (req.user.role !== 'viewer') {
         return res.status(403).json({ message: 'This action is for viewers only.' });
     }
@@ -123,7 +120,6 @@ const setupViewerMfa = async (req, res) => {
     }
 };
 
-// ** NEW - Viewer MFA Verification **
 const verifyAndEnableViewerMfa = async (req, res) => {
     if (req.user.role !== 'viewer') {
         return res.status(403).json({ message: 'This action is for viewers only.' });
@@ -149,11 +145,10 @@ const verifyAndEnableViewerMfa = async (req, res) => {
     }
 };
 
-
 module.exports = {
     loginUser,
     setupAdminMfa,
     verifyAndEnableAdminMfa,
-    setupViewerMfa, // <-- Export new function
-    verifyAndEnableViewerMfa, // <-- Export new function
+    setupViewerMfa,
+    verifyAndEnableViewerMfa,
 };
