@@ -1,19 +1,39 @@
-const Client = require('../models/clientModel'); // <-- Changed
+const Client = require('../models/clientModel');
 const cloudinary = require('cloudinary').v2;
 
 const createClient = async (req, res) => {
     try {
-        const { ...textData } = req.body;
+        const clientData = {
+            organisationName: req.body.organisationName,
+            organisationAddress: req.body.organisationAddress,
+            organisationDomainId: req.body.organisationDomainId,
+            natureOfBusiness: req.body.natureOfBusiness,
+            authorisedSignatoryFullName: req.body.authorisedSignatoryFullName,
+            authorisedSignatoryMobile: req.body.authorisedSignatoryMobile,
+            authorisedSignatoryEmail: req.body.authorisedSignatoryEmail,
+            authorisedSignatoryDesignation: req.body.authorisedSignatoryDesignation,
+            billingContactName: req.body.billingContactName,
+            billingContactNumber: req.body.billingContactNumber,
+            billingContactEmail: req.body.billingContactEmail,
+            organisationType: req.body.organisationType
+        };
+
         let documents = [];
-
-        if (req.files && req.files.length > 0) {
-            documents = req.files.map(file => ({
-                url: file.path,
-                public_id: file.filename
-            }));
+        // req.files is now an object, so we iterate over its values
+        if (req.files) {
+            for (const field in req.files) {
+                const fileArray = req.files[field];
+                if (fileArray && fileArray.length > 0) {
+                    const file = fileArray[0];
+                    documents.push({
+                        url: file.path,
+                        public_id: file.filename
+                    });
+                }
+            }
         }
-
-        const newClient = await Client.create(textData, documents); // <-- Changed
+        
+        const newClient = await Client.create(clientData, documents);
         res.status(201).json(newClient);
 
     } catch (error) {
@@ -25,7 +45,7 @@ const createClient = async (req, res) => {
 
 const getAllClients = async (req, res) => {
     try {
-        const clients = await Client.findAll(); // <-- Changed
+        const clients = await Client.findAll();
         res.status(200).json(clients);
     } catch (error) {
         res.status(500).json({ message: 'Server Error' });
@@ -34,7 +54,7 @@ const getAllClients = async (req, res) => {
 
 const getClientById = async (req, res) => {
     try {
-        const client = await Client.findById(req.params.id); // <-- Changed
+        const client = await Client.findById(req.params.id);
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
@@ -47,7 +67,7 @@ const getClientById = async (req, res) => {
 const updateClient = async (req, res) => {
     try {
         const { status, ...updateData } = req.body;
-        const client = await Client.update(req.params.id, updateData); // <-- Changed
+        const client = await Client.update(req.params.id, updateData);
 
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
@@ -65,7 +85,7 @@ const updateClientStatus = async (req, res) => {
             return res.status(400).json({ message: 'Invalid status provided.' });
         }
 
-        const client = await Client.updateStatus(req.params.id, status); // <-- Changed
+        const client = await Client.updateStatus(req.params.id, status);
 
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
@@ -78,11 +98,11 @@ const updateClientStatus = async (req, res) => {
 
 const deleteClient = async (req, res) => {
     try {
-        const client = await Client.findById(req.params.id); // <-- Check if exists first
+        const client = await Client.findById(req.params.id); // Check if exists first
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
-        await Client.remove(req.params.id); // <-- Changed
+        await Client.remove(req.params.id);
         res.status(200).json({ message: 'Client removed successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Server Error' });

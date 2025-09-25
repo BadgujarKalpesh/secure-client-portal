@@ -13,8 +13,19 @@ const { protect, adminOnly, mfaEnabled } = require('../middleware/authMiddleware
 
 router.use(protect, mfaEnabled);
 
+// Define the fields that will be uploaded
+const documentUploadFields = [
+    { name: 'certificateOfIncorporation', maxCount: 1 },
+    { name: 'gstCertificate', maxCount: 1 },
+    { name: 'panCard', maxCount: 1 },
+    { name: 'officeProof', maxCount: 1 },
+    { name: 'utilityBill', maxCount: 1 },
+    { name: 'signatoryLetter', maxCount: 1 },
+    { name: 'boardResolution', maxCount: 1 }
+];
+
 router.route('/')
-    .post(adminOnly, upload.array('documents', 5), createClient)
+    .post(adminOnly, upload.fields(documentUploadFields), createClient)
     .get(getAllClients);
 
 router.route('/:id')
@@ -22,7 +33,6 @@ router.route('/:id')
     .put(adminOnly, updateClient)
     .delete(adminOnly, deleteClient);
 
-// ** CHANGED: Removed adminOnly so viewers can also update status **
 router.put('/:id/status', updateClientStatus);
 
 module.exports = router;
