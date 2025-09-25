@@ -4,18 +4,18 @@ const cloudinary = require('cloudinary').v2;
 const createClient = async (req, res) => {
     try {
         const clientData = {
-            organisationName: req.body.organisationName,
-            organisationAddress: req.body.organisationAddress,
-            organisationDomainId: req.body.organisationDomainId,
-            natureOfBusiness: req.body.natureOfBusiness,
-            authorisedSignatoryFullName: req.body.authorisedSignatoryFullName,
-            authorisedSignatoryMobile: req.body.authorisedSignatoryMobile,
-            authorisedSignatoryEmail: req.body.authorisedSignatoryEmail,
-            authorisedSignatoryDesignation: req.body.authorisedSignatoryDesignation,
-            billingContactName: req.body.billingContactName,
-            billingContactNumber: req.body.billingContactNumber,
-            billingContactEmail: req.body.billingContactEmail,
-            organisationType: req.body.organisationType
+            organisation_name: req.body.organisationName,
+            organisation_address: req.body.organisationAddress,
+            organisation_domain_id: req.body.organisationDomainId,
+            nature_of_business: req.body.natureOfBusiness,
+            authorised_signatory_full_name: req.body.authorisedSignatoryFullName,
+            authorised_signatory_mobile: req.body.authorisedSignatoryMobile,
+            authorised_signatory_email: req.body.authorisedSignatoryEmail,
+            authorised_signatory_designation: req.body.authorisedSignatoryDesignation,
+            billing_contact_name: req.body.billingContactName,
+            billing_contact_number: req.body.billingContactNumber,
+            billing_contact_email: req.body.billingContactEmail,
+            organisation_type: req.body.organisationType
         };
 
         let documents = [];

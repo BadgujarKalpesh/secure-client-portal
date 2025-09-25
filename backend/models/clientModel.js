@@ -17,10 +17,14 @@ const create = async (clientData, documents) => {
         organisationType
     } = clientData;
 
-    // This INSERT statement now uses column names that directly correspond 
-    // to the fields from your frontend form, converted to snake_case.
     const clientQuery = `
         INSERT INTO clients (
+            -- Added these three columns to satisfy the NOT NULL constraint
+            full_name,
+            email,
+            contact_number,
+
+            -- The rest of the organisation and contact details
             organisation_name,
             organisation_address,
             organisation_domain_id,
@@ -33,11 +37,17 @@ const create = async (clientData, documents) => {
             billing_contact_number,
             billing_contact_email,
             organisation_type
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
         RETURNING *;
     `;
 
     const clientValues = [
+        // Mapped authorised signatory details to the required columns
+        authorisedSignatoryFullName,
+        authorisedSignatoryEmail,
+        authorisedSignatoryMobile,
+
+        // The rest of the values
         organisationName,
         organisationAddress,
         organisationDomainId,
@@ -55,7 +65,7 @@ const create = async (clientData, documents) => {
     const clientResult = await pool.query(clientQuery, clientValues);
     const newClient = clientResult.rows[0];
 
-    // If there are documents, add them to the documents table
+    // Document insertion logic remains the same
     if (documents && documents.length > 0) {
         const documentQuery = 'INSERT INTO documents (client_id, url, public_id) VALUES ($1, $2, $3)';
         for (const doc of documents) {
@@ -66,18 +76,17 @@ const create = async (clientData, documents) => {
     return newClient;
 };
 
+
 // Fetches all clients
 const findAll = async () => {
-    // This query now re-maps the database columns to the snake_case fields
-    // that the frontend components (like the list and edit modal) expect.
     const query = `
         SELECT 
             id,
-            authorised_signatory_full_name AS full_name,
-            authorised_signatory_email AS email,
-            authorised_signatory_mobile AS contact_number,
-            organisation_address AS address,
-            organisation_name AS business_name,
+            full_name,
+            email,
+            contact_number,
+            address,
+            business_name,
             status,
             created_at
         FROM clients 
@@ -101,23 +110,25 @@ const update = async (id, updateData) => {
         contactNumber,
         email,
         address,
-        businessName
+        businessName,
+        // Add other fields you might want to update
     } = updateData;
 
     const query = `
         UPDATE clients 
         SET 
-            authorised_signatory_full_name = $1, 
-            authorised_signatory_mobile = $2, 
-            authorised_signatory_email = $3, 
-            organisation_address = $4, 
-            organisation_name = $5
+            full_name = $1, 
+            contact_number = $2, 
+            email = $3, 
+            address = $4, 
+            business_name = $5
         WHERE id = $6
         RETURNING *;
     `;
     const { rows } = await pool.query(query, [fullName, contactNumber, email, address, businessName, id]);
     return rows[0];
 };
+
 
 // Updates just the status of a client
 const updateStatus = async (id, status) => {
