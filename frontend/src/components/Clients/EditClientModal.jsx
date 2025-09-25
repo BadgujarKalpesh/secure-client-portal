@@ -102,16 +102,20 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                         {error && <div className="message error" style={{ color: 'red', marginTop: '15px' }}>{error}</div>}
                     </div>
                     <div className="modal-footer">
-                        {/* Only show action buttons to admins */}
-                        {isAdmin && (
-                            <>
-                                <div className="status-buttons">
+                        <div className="status-buttons">
+                            {/* ** CHANGED: Show buttons if user is admin OR viewer ** */}
+                            {(isAdmin || user?.role === 'viewer') && (
+                                <>
                                     <button type="button" className="btn btn-success" onClick={() => handleStatusChange('Approved')}>Approve</button>
                                     <button type="button" className="btn btn-danger" onClick={() => handleStatusChange('Rejected')}>Reject</button>
-                                </div>
-                                <button type="submit" className="btn btn-primary">Save Changes</button>
-                            </>
+                                </>
+                            )}
+                        </div>
+                        {/* Only admins see the Save Changes button */}
+                        {isAdmin && (
+                            <button type="submit" className="btn btn-primary">Save Changes</button>
                         )}
+                        {/* Viewers see a Close button instead */}
                         {!isAdmin && (
                             <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
                         )}

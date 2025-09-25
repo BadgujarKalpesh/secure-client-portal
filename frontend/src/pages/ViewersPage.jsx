@@ -3,10 +3,14 @@ import api from '../api/axiosConfig';
 
 const ViewersPage = () => {
     const [viewers, setViewers] = useState([]);
+    const [name, setName] = useState('');
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [selectedViewer, setSelectedViewer] = useState(null);
 
     const fetchViewers = async () => {
         try {
@@ -27,14 +31,30 @@ const ViewersPage = () => {
         setError('');
         setMessage('');
         try {
-            await api.post('/viewers', { username, password });
+            await api.post('/viewers', { name, username, password });
             setMessage(`Viewer "${username}" created successfully!`);
+            setName('');
             setUsername('');
             setPassword('');
             fetchViewers(); // Refresh the list
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to create viewer.');
         }
+    };
+
+    const handleEditClick = (viewer) => {
+        setSelectedViewer(viewer);
+        setIsModalOpen(true);
+    };
+
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setSelectedViewer(null);
+    };
+
+    const handleUpdate = () => {
+        fetchViewers();
+        handleCloseModal();
     };
 
     return (
@@ -44,6 +64,17 @@ const ViewersPage = () => {
             <div className="card">
                 <h3>Create New Viewer</h3>
                 <form onSubmit={handleCreateViewer} className="form-grid">
+                    <div className="form-group">
+                        <label>Full Name</label>
+                        <input
+                            type="text"
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
+                            className="form-control"
+                            placeholder="Enter viewer's full name"
+                            required
+                        />
+                    </div>
                     <div className="form-group">
                         <label>Username</label>
                         <input
@@ -76,27 +107,43 @@ const ViewersPage = () => {
 
             <div className="card" style={{marginTop: '20px'}}>
                 <h3>Existing Viewers</h3>
-                {viewers.length > 0 ? (
-                    <table className="client-table">
-                        <thead>
-                            <tr>
-                                <th>Username</th>
-                                <th>Created At</th>
+                <table className="client-table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Created At</th>
+                            <th>Actions</th> {/* <-- ADD ACTIONS HEADER */}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {viewers.map(viewer => (
+                            <tr key={viewer.id}>
+                                <td>{viewer.name}</td>
+                                <td>{viewer.username}</td>
+                                <td>{new Date(viewer.created_at).toLocaleDateString()}</td>
+                                <td>
+                                    {/* ADD EDIT BUTTON */}
+                                    <div className="action-icons">
+                                        <button onClick={() => handleEditClick(viewer)} title="Edit Viewer">
+                                            <EditIcon />
+                                        </button>
+                                    </div>
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            {viewers.map(viewer => (
-                                <tr key={viewer.id}>
-                                    <td>{viewer.username}</td>
-                                    <td>{new Date(viewer.created_at).toLocaleDateString()}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                ) : (
-                    <p>No viewers have been created yet.</p>
-                )}
+                        ))}
+                    </tbody>
+                </table>
             </div>
+
+            {/* RENDER THE MODAL when it's open */}
+            {isModalOpen && (
+                <EditViewerModal
+                    viewer={selectedViewer}
+                    onClose={handleCloseModal}
+                    onUpdate={handleUpdate}
+                />
+            )}
         </div>
     );
 };

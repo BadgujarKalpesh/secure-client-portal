@@ -1,13 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { createViewer, getAllViewers } = require('../controllers/viewerController');
-const { protect } = require('../middleware/authMiddleware');
+const { createViewer, getAllViewers, updateViewer } = require('../controllers/viewerController');
+const { protect, adminOnly, mfaEnabled } = require('../middleware/authMiddleware');
 
-// All routes in this file are protected and can only be accessed by a logged-in admin
-router.use(protect);
+router.use(protect, adminOnly, mfaEnabled);
 
 router.route('/')
     .post(createViewer)
     .get(getAllViewers);
+
+// ** NEW ROUTE for updating a specific viewer by ID **
+router.put('/:id', updateViewer);
 
 module.exports = router;

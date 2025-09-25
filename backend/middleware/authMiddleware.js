@@ -1,16 +1,14 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/adminModel');
-const Viewer = require('../models/viewerModel'); // Import Viewer model
+const Viewer = require('../models/viewerModel');
 
 const protect = async (req, res, next) => {
     let token;
-
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-            // Find user based on the role in the token
             if (decoded.role === 'admin') {
                 req.user = await Admin.findById(decoded.id);
             } else if (decoded.role === 'viewer') {
@@ -21,22 +19,17 @@ const protect = async (req, res, next) => {
                 return res.status(401).json({ message: 'Not authorized, user not found' });
             }
             
-            // Attach role for easy access in next middleware/controllers
             req.user.role = decoded.role;
-
             next();
         } catch (error) {
-            console.error(error);
             res.status(401).json({ message: 'Not authorized, token failed' });
         }
     }
-
     if (!token) {
         res.status(401).json({ message: 'Not authorized, no token' });
     }
 };
 
-// ** NEW MIDDLEWARE to check if the user is an admin **
 const adminOnly = (req, res, next) => {
     if (req.user && req.user.role === 'admin') {
         next();
@@ -45,4 +38,19 @@ const adminOnly = (req, res, next) => {
     }
 };
 
-module.exports = { protect, adminOnly };
+// ** NEW MIDDLEWARE TO CHECK IF MFA IS ENABLED **
+const mfaEnabled = (req, res, next) => {
+    // Check if the user object exists and if MFA is enabled
+    if (req.user && req.user.is_mfa_enabled) {
+        next();
+    } else {
+        // If MFA is not enabled, deny access
+        res.status(403).json({ 
+            message: 'MFA is not enabled. Please complete MFA setup to access this feature.',
+            mfaRequired: false, // Indicates setup is needed, not just verification
+            mfaEnabled: false
+        });
+    }
+};
+
+module.exports = { protect, adminOnly, mfaEnabled };
