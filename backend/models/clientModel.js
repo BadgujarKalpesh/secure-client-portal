@@ -1,86 +1,112 @@
-const { pool } = require('../config/db');
+const Client = require('../models/clientModel');
+const cloudinary = require('cloudinary').v2;
 
-const create = async (clientData, documents) => {
-    const {
-        organisationName, organisationAddress, organisationDomainId, natureOfBusiness,
-        authorisedSignatoryFullName, authorisedSignatoryMobile, authorisedSignatoryEmail, authorisedSignatoryDesignation,
-        billingContactName, billingContactNumber, billingContactEmail, organisationType
-    } = clientData;
+const createClient = async (req, res) => {
+    try {
+        // ** FIXED: Manually map camelCase from request to snake_case for the model **
+        const clientData = {
+            organisationName: req.body.organisationName,
+            organisationAddress: req.body.organisationAddress,
+            organisationDomainId: req.body.organisationDomainId,
+            natureOfBusiness: req.body.natureOfBusiness,
+            authorisedSignatoryFullName: req.body.authorisedSignatoryFullName,
+            authorisedSignatoryMobile: req.body.authorisedSignatoryMobile,
+            authorisedSignatoryEmail: req.body.authorisedSignatoryEmail,
+            authorisedSignatoryDesignation: req.body.authorisedSignatoryDesignation,
+            billingContactName: req.body.billingContactName,
+            billingContactNumber: req.body.billingContactNumber,
+            billingContactEmail: req.body.billingContactEmail,
+            organisationType: req.body.organisationType
+        };
 
-    const clientResult = await pool.query(
-        `INSERT INTO clients (
-            organisation_name, organisation_address, organisation_domain_id, nature_of_business,
-            authorised_signatory_full_name, authorised_signatory_mobile, authorised_signatory_email, authorised_signatory_designation,
-            billing_contact_name, billing_contact_number, billing_contact_email, organisation_type
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`,
-        [
-            organisationName, organisationAddress, organisationDomainId, natureOfBusiness,
-            authorisedSignatoryFullName, authorisedSignatoryMobile, authorisedSignatoryEmail, authorisedSignatoryDesignation,
-            billingContactName, billingContactNumber, billingContactEmail, organisationType
-        ]
-    );
-    const newClient = clientResult.rows[0];
-
-    if (documents && documents.length > 0) {
-        for (const doc of documents) {
-            await pool.query(
-                'INSERT INTO documents (client_id, url, public_id) VALUES ($1, $2, $3)',
-                [newClient.id, doc.url, doc.public_id]
-            );
+        let documents = [];
+        if (req.files && req.files.length > 0) {
+            // Map files to the format expected by the model
+            documents = req.files.map(file => ({
+                url: file.path,
+                public_id: file.filename 
+            }));
         }
+
+        const newClient = await Client.create(clientData, documents);
+        res.status(201).json(newClient);
+
+    } catch (error) {
+        console.error('--- ERROR CREATING CLIENT ---', error);
+        res.status(500).json({ message: 'Server error while creating client', error: error.message });
     }
-    // Fetch the client again to include documents
-    return findById(newClient.id);
 };
 
-const findAll = async () => {
-    const query = 'SELECT * FROM clients ORDER BY created_at DESC';
-    const { rows } = await pool.query(query);
-    return rows;
-};
-
-const findById = async (id) => {
-    const clientQuery = 'SELECT * FROM clients WHERE id = $1';
-    const docQuery = 'SELECT * FROM documents WHERE client_id = $1';
-
-    const clientRes = await pool.query(clientQuery, [id]);
-    const docRes = await pool.query(docQuery, [id]);
-
-    if (clientRes.rows.length === 0) {
-        return null;
+const getAllClients = async (req, res) => {
+    try {
+        const clients = await Client.findAll();
+        res.status(200).json(clients);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
     }
-
-    const client = clientRes.rows[0];
-    client.documents = docRes.rows;
-    return client;
 };
 
-const update = async (id, updateData) => {
-    const { fullName, contactNumber, email, address, businessName, gstNumber, panNumber, fssaiCode } = updateData;
-    const query = `
-        UPDATE clients 
-        SET full_name = $1, contact_number = $2, email = $3, address = $4, business_name = $5, gst_number = $6, pan_number = $7, fssai_code = $8, updated_at = CURRENT_TIMESTAMP
-        WHERE id = $9 RETURNING *`;
-    const { rows } = await pool.query(query, [fullName, contactNumber, email, address, businessName, gstNumber, panNumber, fssaiCode, id]);
-    return rows[0];
+const getClientById = async (req, res) => {
+    try {
+        const client = await Client.findById(req.params.id);
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        res.status(200).json(client);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
 };
 
-const updateStatus = async (id, status) => {
-    const query = 'UPDATE clients SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING *';
-    const { rows } = await pool.query(query, [status, id]);
-    return rows[0];
+const updateClient = async (req, res) => {
+    try {
+        const { status, ...updateData } = req.body;
+        const client = await Client.update(req.params.id, updateData);
+
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        res.status(200).json(client);
+    } catch (error) {
+        res.status(400).json({ message: 'Failed to update client', error: error.message });
+    }
 };
 
-const remove = async (id) => {
-    const query = 'DELETE FROM clients WHERE id = $1';
-    await pool.query(query, [id]);
+const updateClientStatus = async (req, res) => {
+    try {
+        const { status } = req.body;
+        if (!['Approved', 'Rejected'].includes(status)) {
+            return res.status(400).json({ message: 'Invalid status provided.' });
+        }
+        const client = await Client.updateStatus(req.params.id, status);
+
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        res.status(200).json(client);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+const deleteClient = async (req, res) => {
+    try {
+        const client = await Client.findById(req.params.id);
+        if (!client) {
+            return res.status(404).json({ message: 'Client not found' });
+        }
+        await Client.remove(req.params.id);
+        res.status(200).json({ message: 'Client removed successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error' });
+    }
 };
 
 module.exports = {
-    create,
-    findAll,
-    findById,
-    update,
-    updateStatus,
-    remove,
+    createClient,
+    getAllClients,
+    getClientById,
+    updateClient,
+    deleteClient,
+    updateClientStatus,
 };

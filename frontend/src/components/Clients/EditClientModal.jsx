@@ -1,16 +1,27 @@
 import React, { useState } from 'react';
 import api from '../../api/axiosConfig';
-import { useAuth } from '../../context/AuthContext'; // Import useAuth
+import { useAuth } from '../../context/AuthContext';
 
 const EditClientModal = ({ client, onClose, onUpdate }) => {
-    const { user } = useAuth(); // Get the current user
-    const isAdmin = user?.role === 'admin'; // Check if the user is an admin\
+    const { user } = useAuth();
+    const isAdmin = user?.role === 'admin';
 
-    const [formData, setFormData] = useState({ ...client });
+    // ** FIXED: Initialize state with fallback to empty strings to prevent 'undefined' **
+    const [formData, setFormData] = useState({
+        id: client.id || '',
+        full_name: client.full_name || '',
+        email: client.email || '',
+        contact_number: client.contact_number || '',
+        address: client.address || '',
+        business_name: client.business_name || '',
+        gst_number: client.gst_number || '',
+        pan_number: client.pan_number || '',
+        fssai_code: client.fssai_code || ''
+    });
     const [error, setError] = useState('');
 
     const handleChange = (e) => {
-        if (!isAdmin) return; // Prevent changes if not admin
+        if (!isAdmin) return;
         const { name, value } = e.target;
         setFormData(prevState => ({ ...prevState, [name]: value }));
     };
@@ -19,7 +30,6 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
         e.preventDefault();
         setError('');
         try {
-            // Create a payload with camelCase keys that the backend expects
             const payload = {
                 fullName: formData.full_name,
                 contactNumber: formData.contact_number,
@@ -54,7 +64,6 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                     <h3>{isAdmin ? 'Edit Client' : 'View Client'}: {formData.full_name}</h3>
                     <button onClick={onClose} className="close-button">&times;</button>
                 </div>
-                {/* Prevent form submission if not an admin */}
                 <form onSubmit={isAdmin ? handleSaveChanges : (e) => e.preventDefault()}>
                     <div className="modal-body">
                         {/* Section for Basic Info */}
