@@ -21,9 +21,15 @@ const ClientsListPage = () => {
         fetchClients();
     }, [fetchClients]);
 
-    const handleEditClick = (client) => {
-        setSelectedClient(client);
-        setIsModalOpen(true);
+    // **FIX**: Fetch full client details when the edit icon is clicked
+    const handleEditClick = async (client) => {
+        try {
+            const response = await api.get(`/clients/${client.id}`);
+            setSelectedClient(response.data);
+            setIsModalOpen(true);
+        } catch (error) {
+            console.error("Failed to fetch client details:", error);
+        }
     };
 
     const handleCloseModal = () => {
@@ -32,7 +38,7 @@ const ClientsListPage = () => {
     };
 
     const handleUpdate = () => {
-        fetchClients(); // Re-fetch clients to show updated data
+        fetchClients();
         handleCloseModal();
     };
 
@@ -42,7 +48,7 @@ const ClientsListPage = () => {
             <div className="card">
                 <ClientsList clients={clients} onEditClick={handleEditClick} />
             </div>
-            {isModalOpen && (
+            {isModalOpen && selectedClient && (
                 <EditClientModal
                     client={selectedClient}
                     onClose={handleCloseModal}

@@ -1,56 +1,21 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
 import { useAuth } from '../../context/AuthContext';
 
 const EditClientModal = ({ client, onClose, onUpdate }) => {
     const { user } = useAuth();
     const isAdmin = user?.role === 'admin';
-
-    // ** FIXED: Initialize state with fallback to empty strings to prevent 'undefined' **
+    
+    // Initialize state with all the detailed fields
     const [formData, setFormData] = useState({
-        id: client.id || '',
-        full_name: client.full_name || '',
-        email: client.email || '',
-        contact_number: client.contact_number || '',
-        address: client.address || '',
-        business_name: client.business_name || '',
-        gst_number: client.gst_number || '',
-        pan_number: client.pan_number || '',
-        fssai_code: client.fssai_code || ''
+        ...client
     });
     const [error, setError] = useState('');
-
-    const handleChange = (e) => {
-        if (!isAdmin) return;
-        const { name, value } = e.target;
-        setFormData(prevState => ({ ...prevState, [name]: value }));
-    };
-
-    const handleSaveChanges = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            const payload = {
-                fullName: formData.full_name,
-                contactNumber: formData.contact_number,
-                email: formData.email,
-                address: formData.address,
-                businessName: formData.business_name,
-                gstNumber: formData.gst_number,
-                panNumber: formData.pan_number,
-                fssaiCode: formData.fssai_code,
-            };
-            await api.put(`/clients/${formData.id}`, payload);
-            onUpdate();
-        } catch (err) {
-            setError(err.response?.data?.message || 'Failed to save changes.');
-        }
-    };
 
     const handleStatusChange = async (newStatus) => {
         setError('');
         try {
-            await api.put(`/clients/${formData.id}/status`, { status: newStatus });
+            await api.put(`/clients/${client.id}/status`, { status: newStatus });
             onUpdate();
         } catch (err) {
             setError(err.response?.data?.message || `Failed to ${newStatus.toLowerCase()} client.`);
@@ -61,73 +26,50 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h3>{isAdmin ? 'Edit Client' : 'View Client'}: {formData.full_name}</h3>
+                    <h3>Client Details: {formData.organisation_name}</h3>
                     <button onClick={onClose} className="close-button">&times;</button>
                 </div>
-                <form onSubmit={isAdmin ? handleSaveChanges : (e) => e.preventDefault()}>
+                <form onSubmit={(e) => e.preventDefault()}>
                     <div className="modal-body">
-                        {/* Section for Basic Info */}
-                        {/* <h4 className="form-section-header">Basic Information</h4> */}
+                        
+                        <h4 className="form-section-header">Section A – Organisation Details</h4>
                         <div className="form-grid">
-                            <div className="form-group">
-                                <label>Full Name</label>
-                                <input type="text" name="full_name" value={formData.full_name} onChange={handleChange} required className="form-control" />
-                            </div>
-                            <div className="form-group">
-                                <label>Email</label>
-                                <input type="email" name="email" value={formData.email} onChange={handleChange} required className="form-control" />
-                            </div>
-                            <div className="form-group">
-                                <label>Contact Number</label>
-                                <input type="text" name="contact_number" value={formData.contact_number} onChange={handleChange} required className="form-control" />
-                            </div>
-                            <div className="form-group">
-                                <label>Address</label>
-                                <input type="text" name="address" value={formData.address} onChange={handleChange} className="form-control" />
-                            </div>
+                            <div className="form-group"><label>Organisation Name</label><input value={formData.organisation_name || ''} readOnly className="form-control" /></div>
+                            <div className="form-group"><label>Organisation Address</label><input value={formData.organisation_address || ''} readOnly className="form-control" /></div>
+                            <div className="form-group"><label>Organisation Domain ID</label><input value={formData.organisation_domain_id || ''} readOnly className="form-control" /></div>
+                            <div className="form-group"><label>Nature of Business</label><input value={formData.nature_of_business || ''} readOnly className="form-control" /></div>
                         </div>
 
-                        {/* Section for Business Info */}
-                        <h4 className="form-section-header">Business Information</h4>
+                        <h4 className="form-section-header">Section B – Authorised Signatory</h4>
                         <div className="form-grid">
-                            <div className="form-group">
-                                <label>Business Name</label>
-                                <input type="text" name="business_name" value={formData.business_name} onChange={handleChange} className="form-control" />
-                            </div>
-                            <div className="form-group">
-                                <label>GST Number</label>
-                                <input type="text" name="gst_number" value={formData.gst_number} onChange={handleChange} className="form-control" />
-                            </div>
-                            <div className="form-group">
-                                <label>PAN Number</label>
-                                <input type="text" name="pan_number" value={formData.pan_number} onChange={handleChange} className="form-control" />
-                            </div>
-                             <div className="form-group">
-                                <label>FSSAI Code</label>
-                                <input type="text" name="fssai_code" value={formData.fssai_code} onChange={handleChange} className="form-control" />
-                            </div>
+                            <div className="form-group"><label>Full Name</label><input value={formData.authorised_signatory_full_name || ''} readOnly className="form-control" /></div>
+                            <div className="form-group"><label>Mobile Number</label><input value={formData.authorised_signatory_mobile || ''} readOnly className="form-control" /></div>
+                            <div className="form-group"><label>Email ID</label><input value={formData.authorised_signatory_email || ''} readOnly className="form-control" /></div>
+                            <div className="form-group"><label>Designation</label><input value={formData.authorised_signatory_designation || ''} readOnly className="form-control" /></div>
                         </div>
+
+                        <h4 className="form-section-header">Section C – Billing Contact</h4>
+                        <div className="form-grid">
+                            <div className="form-group"><label>Billing Contact Name</label><input value={formData.billing_contact_name || ''} readOnly className="form-control" /></div>
+                            <div className="form-group"><label>Billing Contact Number</label><input value={formData.billing_contact_number || ''} readOnly className="form-control" /></div>
+                            <div className="form-group"><label>Billing Email ID</label><input value={formData.billing_contact_email || ''} readOnly className="form-control" /></div>
+                        </div>
+
+                        <h4 className="form-section-header">Documents</h4>
+                         <div className="form-grid">
+                              <div className="form-group"><label>Organisation Type</label><input value={formData.organisation_type || ''} readOnly className="form-control" /></div>
+                              {/* Here you would map over and display links to the documents if they are fetched */}
+                         </div>
+
 
                         {error && <div className="message error" style={{ color: 'red', marginTop: '15px' }}>{error}</div>}
                     </div>
                     <div className="modal-footer">
                         <div className="status-buttons">
-                            {/* ** CHANGED: Show buttons if user is admin OR viewer ** */}
-                            {(isAdmin || user?.role === 'viewer') && (
-                                <>
-                                    <button type="button" className="btn btn-success" onClick={() => handleStatusChange('Approved')}>Approve</button>
-                                    <button type="button" className="btn btn-danger" onClick={() => handleStatusChange('Rejected')}>Reject</button>
-                                </>
-                            )}
+                            <button type="button" className="btn btn-success" onClick={() => handleStatusChange('Approved')}>Approve</button>
+                            <button type="button" className="btn btn-danger" onClick={() => handleStatusChange('Rejected')}>Reject</button>
                         </div>
-                        {/* Only admins see the Save Changes button */}
-                        {isAdmin && (
-                            <button type="submit" className="btn btn-primary">Save Changes</button>
-                        )}
-                        {/* Viewers see a Close button instead */}
-                        {!isAdmin && (
-                            <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
-                        )}
+                        <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
                     </div>
                 </form>
             </div>

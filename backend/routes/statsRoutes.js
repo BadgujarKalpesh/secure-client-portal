@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { getStats } = require('../controllers/statsController');
-const { protect, adminOnly, mfaEnabled } = require('../middleware/authMiddleware');
+const { protect, mfaEnabled } = require('../middleware/authMiddleware');
 
-// Only logged-in admins with MFA can access stats
-router.get('/', protect, adminOnly, mfaEnabled, getStats);
+// REMOVED adminOnly: Now all authenticated users with MFA can access this route
+router.get('/', protect, mfaEnabled, getStats);
 
 module.exports = router;
