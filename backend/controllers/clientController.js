@@ -3,6 +3,7 @@ const cloudinary = require('cloudinary').v2;
 
 const createClient = async (req, res) => {
     try {
+        // Map frontend camelCase names to backend snake_case names
         const clientData = {
             organisation_name: req.body.organisationName,
             organisation_address: req.body.organisationAddress,
@@ -19,13 +20,13 @@ const createClient = async (req, res) => {
         };
 
         let documents = [];
-        // req.files is now an object, so we iterate over its values
         if (req.files) {
-            for (const field in req.files) {
-                const fileArray = req.files[field];
+            for (const fieldName in req.files) {
+                const fileArray = req.files[fieldName];
                 if (fileArray && fileArray.length > 0) {
                     const file = fileArray[0];
                     documents.push({
+                        document_type: fieldName, // e.g., 'certificateOfIncorporation'
                         url: file.path,
                         public_id: file.filename
                     });
@@ -42,12 +43,12 @@ const createClient = async (req, res) => {
     }
 };
 
-
 const getAllClients = async (req, res) => {
     try {
         const clients = await Client.findAll();
         res.status(200).json(clients);
     } catch (error) {
+        console.error('Error fetching all clients:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
@@ -58,23 +59,11 @@ const getClientById = async (req, res) => {
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
+        // You might want to fetch associated documents here as well
         res.status(200).json(client);
     } catch (error) {
+        console.error(`Error fetching client ${req.params.id}:`, error);
         res.status(500).json({ message: 'Server Error' });
-    }
-};
-
-const updateClient = async (req, res) => {
-    try {
-        const { status, ...updateData } = req.body;
-        const client = await Client.update(req.params.id, updateData);
-
-        if (!client) {
-            return res.status(404).json({ message: 'Client not found' });
-        }
-        res.status(200).json(client);
-    } catch (error) {
-        res.status(400).json({ message: 'Failed to update client', error: error.message });
     }
 };
 
@@ -92,22 +81,21 @@ const updateClientStatus = async (req, res) => {
         }
         res.status(200).json(client);
     } catch (error) {
+        console.error(`Error updating status for client ${req.params.id}:`, error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
 
+
+// Note: A full updateClient function would be more complex, mapping editable fields.
+// This is a placeholder for that logic if you need it.
+const updateClient = async (req, res) => {
+    res.status(501).json({ message: 'Client update not yet implemented.'});
+}
+
 const deleteClient = async (req, res) => {
-    try {
-        const client = await Client.findById(req.params.id); // Check if exists first
-        if (!client) {
-            return res.status(404).json({ message: 'Client not found' });
-        }
-        await Client.remove(req.params.id);
-        res.status(200).json({ message: 'Client removed successfully' });
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error' });
-    }
-};
+     res.status(501).json({ message: 'Client delete not yet implemented.'});
+}
 
 module.exports = {
     createClient,
