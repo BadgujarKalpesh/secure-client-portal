@@ -23,13 +23,15 @@ const Sidebar = () => {
                 <ul>
                     <li><NavLink to="/dashboard"><DashboardIcon /> Dashboard</NavLink></li>
                     
-                    {/* Admins and Viewers can see clients */}
                     {!isSuperAdmin && (
                         <li><NavLink to="/clients" end><ClientsIcon /> Show Clients</NavLink></li>
                     )}
                     
                     {isSuperAdmin && (
-                        <li><NavLink to="/user-management"><CreateIcon /> User Management</NavLink></li>
+                        <>
+                            <li><NavLink to="/user-management"><CreateIcon /> Create User</NavLink></li>
+                            <li><NavLink to="/user-list"><ViewerIcon /> User List</NavLink></li>
+                        </>
                     )}
                     
                     {isAdmin && (
@@ -45,7 +47,7 @@ const Sidebar = () => {
                         <li><NavLink to="/settings/viewer-mfa"><SettingsIcon /> MFA Setup</NavLink></li>
                     )}
                 </ul>
-            </nav>
+           </nav>
             <div className="sidebar-footer">
                 <div className="user-info">Welcome, {user?.username || 'User'}!</div>
                 <button onClick={logout} className="btn btn-secondary">Logout</button>

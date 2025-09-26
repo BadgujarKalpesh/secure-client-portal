@@ -1,10 +1,10 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+// import { useAuth } from '../context/AuthContext';
 import MfaSetup from '../components/Auth/MfaSetup';
 
 const SuperAdminMfaSettingsPage = () => {
-    const { user } = useAuth();
+    // const { user } = useAuth();
     const location = useLocation();
     const message = location.state?.message;
 
