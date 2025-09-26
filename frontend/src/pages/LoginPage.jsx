@@ -8,7 +8,7 @@ const LoginPage = () => {
     const [mfaToken, setMfaToken] = useState('');
     const [mfaRequired, setMfaRequired] = useState(false);
     const [error, setError] = useState('');
-    const [role, setRole] = useState('admin'); // 'admin', 'viewer', or 'superAdmin'
+    const [role, setRole] = useState('admin');
     const { login } = useAuth();
 
     const handleSubmit = async (e) => {
@@ -29,27 +29,32 @@ const LoginPage = () => {
     };
 
     const toggleButtonStyle = (selectedRole) => ({
-        padding: '10px 20px',
+        padding: '12px 20px',
         width: '33.33%',
         border: 'none',
-        background: role === selectedRole ? 'var(--primary-blue)' : '#f0f0f0',
-        color: role === selectedRole ? 'white' : 'black',
+        background: role === selectedRole ? 'var(--primary-blue)' : 'transparent',
+        color: role === selectedRole ? 'white' : '#555',
         cursor: 'pointer',
+        fontWeight: '600',
+        borderRadius: '8px',
+        transition: 'all 0.3s ease',
     });
 
     return (
         <div className="login-container">
             <div className="login-card">
-                <h1>Claritel.ai</h1>
-                <div style={{ display: 'flex', marginBottom: '20px', borderRadius: '8px', overflow: 'hidden' }}>
-                    <button style={toggleButtonStyle('admin')} onClick={() => setRole('admin')}>Admin</button>
-                    <button style={toggleButtonStyle('superAdmin')} onClick={() => setRole('superAdmin')}>Super Admin</button>
-                    <button style={toggleButtonStyle('viewer')} onClick={() => setRole('viewer')}>Viewer</button>
+                <div className="login-header">
+                    <h1>Claritel.ai</h1>
+                    <h2>KYC Portal</h2>
                 </div>
-
-                {/* <h3>{role.charAt(0).toUpperCase() + role.slice(1)} Portal</h3> */}
                 
                 <form onSubmit={handleSubmit}>
+                    <div className="role-toggle-container">
+                        <div style={toggleButtonStyle('admin')} onClick={() => setRole('admin')}>Admin</div>
+                        <div style={toggleButtonStyle('superAdmin')} onClick={() => setRole('superAdmin')}>Super Admin</div>
+                        <div style={toggleButtonStyle('viewer')} onClick={() => setRole('viewer')}>Viewer</div>
+                    </div>
+
                     {!mfaRequired ? (
                         <>
                             <div className="form-group">
@@ -59,7 +64,7 @@ const LoginPage = () => {
                                     value={username} 
                                     onChange={(e) => setUsername(e.target.value)} 
                                     className="form-control"
-                                    placeholder="Username"
+                                    placeholder="Enter your username"
                                     required 
                                 />
                             </div>
@@ -69,7 +74,7 @@ const LoginPage = () => {
                                     value={password} 
                                     onChange={(e) => setPassword(e.target.value)} 
                                     className="form-control"
-                                    placeholder="Password"
+                                    placeholder="Enter your password"
                                     required
                                  />
                             </div>
@@ -77,15 +82,22 @@ const LoginPage = () => {
                         </>
                     ) : (
                         <>
-                            <p>An authentication code is required.</p>
+                            <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>An authentication code is required.</p>
                             <div className="form-group">
                                 <label>6-Digit Code</label>
-                                <input type="text" value={mfaToken} onChange={(e) => setMfaToken(e.target.value)} className="form-control" autoFocus />
+                                <input 
+                                    type="text" 
+                                    value={mfaToken} 
+                                    onChange={(e) => setMfaToken(e.target.value)} 
+                                    className="form-control" 
+                                    placeholder="Enter code from your app"
+                                    autoFocus 
+                                />
                             </div>
                             <button type="submit" className="btn btn-primary" style={{width: '100%'}}>Login</button>
                         </>
                     )}
-                    {error && <div className="message error" style={{color: 'red', marginTop: '10px'}}>{error}</div>}
+                    {error && <div className="message error" style={{color: 'red', marginTop: '15px', textAlign: 'center'}}>{error}</div>}
                 </form>
             </div>
         </div>
