@@ -28,6 +28,7 @@ app.use('/api/clients', require('./routes/clientRoutes'));
 app.use('/api/viewers', require('./routes/viewerRoutes')); 
 app.use('/api/stats', require('./routes/statsRoutes'));
 app.use('/api/superadmin', require('./routes/superAdminRoutes'));
+app.use('/api/account-managers', require('./routes/accountManagerRoutes'));
 
 
 

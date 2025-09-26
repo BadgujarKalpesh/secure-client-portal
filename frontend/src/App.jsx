@@ -12,6 +12,7 @@ import ViewerMfaSettingsPage from './pages/ViewerMfaSettingsPage';
 import SuperAdminMfaSettingsPage from './pages/SuperAdminMfaSettingsPage';
 import UserManagementPage from './pages/UserManagementPage';
 import UserListPage from './pages/UserListPage';
+import AccountManagerPage from './pages/AccountManagerPage';
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
           <Route path="/settings/superadmin-mfa" element={<SuperAdminMfaSettingsPage />} />
           <Route path="/user-management" element={<UserManagementPage />} />
           <Route path="/user-list" element={<UserListPage />} />
+          <Route path="/account-managers" element={<AccountManagerPage />} />
         </Route>
       </Route>
 
