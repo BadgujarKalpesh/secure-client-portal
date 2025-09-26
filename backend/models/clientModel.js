@@ -110,7 +110,6 @@ const findById = async (id) => {
     return rows[0];
 };
 
-// ... (keep the rest of the functions like updateStatus, etc., the same)
 
 const updateStatus = async (id, status) => {
     const query = 'UPDATE clients SET status = $1 WHERE id = $2 RETURNING *';
@@ -118,27 +117,62 @@ const updateStatus = async (id, status) => {
     return rows[0];
 };
 
-const update = async (id, updateData) => {
+const update = async (id, clientData) => {
     const {
-        fullName,
-        contactNumber,
-        email,
-        address,
-        businessName
-    } = updateData;
+        organisationName,
+        organisationAddress,
+        organisationDomainId,
+        natureOfBusiness,
+        authorisedSignatoryFullName,
+        authorisedSignatoryMobile,
+        authorisedSignatoryEmail,
+        authorisedSignatoryDesignation,
+        billingContactName,
+        billingContactNumber,
+        billingContactEmail,
+        organisationType
+    } = clientData;
 
     const query = `
         UPDATE clients 
         SET 
-            full_name = $1, 
-            contact_number = $2, 
-            email = $3, 
-            address = $4, 
-            business_name = $5
-        WHERE id = $6
+            organisation_name = $1,
+            organisation_address = $2,
+            organisation_domain_id = $3,
+            nature_of_business = $4,
+            authorised_signatory_full_name = $5,
+            authorised_signatory_mobile = $6,
+            authorised_signatory_email = $7,
+            authorised_signatory_designation = $8,
+            billing_contact_name = $9,
+            billing_contact_number = $10,
+            billing_contact_email = $11,
+            organisation_type = $12,
+            full_name = $5,
+            email = $7,
+            contact_number = $6,
+            business_name = $1,
+            address = $2
+        WHERE id = $13
         RETURNING *;
     `;
-    const { rows } = await pool.query(query, [fullName, contactNumber, email, address, businessName, id]);
+    const values = [
+        organisationName,
+        organisationAddress,
+        organisationDomainId,
+        natureOfBusiness,
+        authorisedSignatoryFullName,
+        authorisedSignatoryMobile,
+        authorisedSignatoryEmail,
+        authorisedSignatoryDesignation,
+        billingContactName,
+        billingContactNumber,
+        billingContactEmail,
+        organisationType,
+        id
+    ];
+    
+    const { rows } = await pool.query(query, values);
     return rows[0];
 };
 

@@ -40,15 +40,15 @@ const LoginPage = () => {
     return (
         <div className="login-container">
             <div className="login-card">
-                {/* <h2>{role.charAt(0).toUpperCase() + role.slice(1)} Portal</h2> */}
                 <h1>Claritel.ai</h1>
-
                 <div style={{ display: 'flex', marginBottom: '20px', borderRadius: '8px', overflow: 'hidden' }}>
                     <button style={toggleButtonStyle('admin')} onClick={() => setRole('admin')}>Admin</button>
                     <button style={toggleButtonStyle('superAdmin')} onClick={() => setRole('superAdmin')}>Super Admin</button>
                     <button style={toggleButtonStyle('viewer')} onClick={() => setRole('viewer')}>Viewer</button>
                 </div>
-      
+
+                {/* <h3>{role.charAt(0).toUpperCase() + role.slice(1)} Portal</h3> */}
+                
                 <form onSubmit={handleSubmit}>
                     {!mfaRequired ? (
                         <>
@@ -59,7 +59,7 @@ const LoginPage = () => {
                                     value={username} 
                                     onChange={(e) => setUsername(e.target.value)} 
                                     className="form-control"
-                                    placeholder={role === 'admin' ? 'Username' : 'Username'}
+                                    placeholder="Username"
                                     required 
                                 />
                             </div>
@@ -69,7 +69,7 @@ const LoginPage = () => {
                                     value={password} 
                                     onChange={(e) => setPassword(e.target.value)} 
                                     className="form-control"
-                                    placeholder={role === 'admin' ? 'Password' : 'Password'}
+                                    placeholder="Password"
                                     required
                                  />
                             </div>
