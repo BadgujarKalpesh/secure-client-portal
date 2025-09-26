@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
 import { useAuth } from '../context/AuthContext'; // Import useAuth
 
 const DashboardPage = () => {
     const { user } = useAuth(); // Get the user object
+    const navigate = useNavigate();
     const [stats, setStats] = useState({
         clients: { total: 0, approved: 0, rejected: 0 },
         viewers: { total: 0 }
     });
+    const [mfaError, setMfaError] = useState('');
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -15,11 +18,17 @@ const DashboardPage = () => {
                 const response = await api.get('/stats');
                 setStats(response.data);
             } catch (error) {
-                console.error("Failed to fetch stats:", error);
+                // **FIX**: Check for the specific MFA error for viewers
+                if (error.response?.status === 403 && error.response?.data?.mfaEnabled === false && user?.role === 'viewer') {
+                    // Redirect to MFA setup page with a message
+                    navigate('/settings/viewer-mfa', { state: { message: "Please set up MFA to access the portal." } });
+                } else {
+                    console.error("Failed to fetch stats:", error);
+                }
             }
         };
         fetchStats();
-    }, []);
+    }, [user, navigate]);
 
     return (
         <div>

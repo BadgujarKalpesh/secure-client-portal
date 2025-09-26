@@ -25,6 +25,7 @@ const MultiStepForm = ({ onClientAdded }) => {
     const [files, setFiles] = useState({});
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleTextChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -41,6 +42,7 @@ const MultiStepForm = ({ onClientAdded }) => {
         e.preventDefault();
         setMessage('');
         setError('');
+        setIsLoading(true);
         
         const data = new FormData();
         // Append all text data
@@ -69,6 +71,8 @@ const MultiStepForm = ({ onClientAdded }) => {
         } catch (err) {
             console.error('Error creating client:', err);
             setError(err.response?.data?.message || 'Error creating client.');
+        } finally {
+            setIsLoading(false); // **FIX**: Set loading to false in finally block
         }
     };
 
@@ -149,7 +153,11 @@ const MultiStepForm = ({ onClientAdded }) => {
             <div className="form-navigation">
                 {step > 1 && <button type="button" className="btn btn-secondary" onClick={prevStep}>Previous</button>}
                 {step < 4 && <button type="button" className="btn btn-primary" onClick={nextStep}>Next</button>}
-                {step === 4 && <button type="submit" className="btn btn-primary">Create Client</button>}
+                {step === 4 && (
+                    <button type="submit" className="btn btn-primary" disabled={isLoading}>
+                        {isLoading ? 'Submitting...' : 'Create Client'}
+                    </button>
+                )}bcrypt
             </div>
 
             {message && <div className="message success" style={{color: 'green', marginTop: '20px'}}>{message}</div>}
