@@ -12,18 +12,22 @@ const ViewerIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" heig
 const Sidebar = () => {
     const { user, logout } = useAuth();
     const isAdmin = user?.role === 'admin';
+    const isSuperAdmin = user?.role === 'superAdmin';
 
     return (
         <aside className="sidebar">
             <div className="sidebar-header">
-                {isAdmin ? 'Super Admin' : 'Client Portal'}
+                {isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Client Portal')}
             </div>
             <nav className="sidebar-nav">
                 <ul>
                     <li><NavLink to="/dashboard"><DashboardIcon /> Dashboard</NavLink></li>
                     <li><NavLink to="/clients" end><ClientsIcon /> Show Clients</NavLink></li>
                     
-                    {/* These links will only show if the user is an admin */}
+                    {isSuperAdmin && (
+                        <li><NavLink to="/user-management"><CreateIcon /> User Management</NavLink></li>
+                    )}
+                    
                     {isAdmin && (
                         <>
                             <li><NavLink to="/clients/create"><CreateIcon /> Create Client</NavLink></li>
@@ -32,7 +36,9 @@ const Sidebar = () => {
                     )}
                     
                     {/* Different settings link based on role */}
-                    {isAdmin ? (
+                    {isSuperAdmin ? (
+                         <li><NavLink to="/settings/superadmin-mfa"><SettingsIcon /> Settings</NavLink></li>
+                    ) : isAdmin ? (
                         <li><NavLink to="/settings/mfa"><SettingsIcon /> Settings</NavLink></li>
                     ) : (
                         <li><NavLink to="/settings/viewer-mfa"><SettingsIcon /> MFA Setup</NavLink></li>

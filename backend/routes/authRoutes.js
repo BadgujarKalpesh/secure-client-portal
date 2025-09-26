@@ -5,9 +5,12 @@ const {
     setupAdminMfa, 
     verifyAndEnableAdminMfa,
     setupViewerMfa,      
-    verifyAndEnableViewerMfa 
+    verifyAndEnableViewerMfa,
+    setupSuperAdminMfa,
+    verifyAndEnableSuperAdminMfa
 } = require('../controllers/authController');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+
+const { protect, adminOnly, superAdminOnly } = require('../middleware/authMiddleware');
 
 router.post('/login', loginUser);
 
@@ -15,8 +18,12 @@ router.post('/login', loginUser);
 router.get('/mfa/setup', protect, adminOnly, setupAdminMfa);
 router.post('/mfa/enable', protect, adminOnly, verifyAndEnableAdminMfa);
 
-// ** NEW - Viewer MFA Routes **
+// Viewer MFA Routes
 router.get('/mfa/viewer/setup', protect, setupViewerMfa);
 router.post('/mfa/viewer/enable', protect, verifyAndEnableViewerMfa);
+
+// Super Admin MFA Routes
+router.get('/mfa/superadmin/setup', protect, superAdminOnly, setupSuperAdminMfa);
+router.post('/mfa/superadmin/enable', protect, superAdminOnly, verifyAndEnableSuperAdminMfa);
 
 module.exports = router;

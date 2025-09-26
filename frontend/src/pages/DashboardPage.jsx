@@ -18,8 +18,12 @@ const DashboardPage = () => {
                 const response = await api.get('/stats');
                 setStats(response.data);
             } catch (error) {
-                if (error.response?.status === 403 && error.response?.data?.mfaEnabled === false && (user?.role === 'viewer' || user?.role === 'superAdmin')) {
-                    navigate('/settings/mfa', { state: { message: "Please set up MFA to access the portal." } });
+                if (error.response?.status === 403 && error.response?.data?.mfaEnabled === false) {
+                    if (user?.role === 'superAdmin') {
+                        navigate('/settings/superadmin-mfa', { state: { message: "Please set up MFA to access the portal." } });
+                    } else if (user?.role === 'viewer') {
+                        navigate('/settings/viewer-mfa', { state: { message: "Please set up MFA to access the portal." } });
+                    }
                 } else {
                     console.error("Failed to fetch stats:", error);
                 }

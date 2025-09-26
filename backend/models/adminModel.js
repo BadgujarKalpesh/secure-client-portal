@@ -1,4 +1,13 @@
 const { pool } = require('../config/db');
+const bcrypt = require('bcryptjs');
+
+const create = async (name, username, password) => {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    const query = 'INSERT INTO admins (name, username, password) VALUES ($1, $2, $3) RETURNING id, name, username, created_at';
+    const { rows } = await pool.query(query, [name, username, hashedPassword]);
+    return rows[0];
+};
 
 const findById = async (id) => {
     const query = 'SELECT id, username, mfa_secret, is_mfa_enabled, mfa_temp_secret FROM admins WHERE id = $1';
@@ -24,6 +33,7 @@ const enableMfa = async (id, secret) => {
 
 
 module.exports = {
+    create,
     findById,
     findByUsername,
     updateMfaTempSecret,
