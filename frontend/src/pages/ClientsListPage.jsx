@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import ClientsList from '../components/Clients/ClientsList';
 import EditClientModal from '../components/Clients/EditClientModal';
@@ -7,21 +9,32 @@ const ClientsListPage = () => {
     const [clients, setClients] = useState([]);
     const [selectedClient, setSelectedClient] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
     const fetchClients = useCallback(async () => {
         try {
             const response = await api.get('/clients');
             setClients(response.data);
         } catch (error) {
-            console.error("Failed to fetch clients:", error);
+            if (error.response?.status === 403 && error.response?.data?.mfaEnabled === false) {
+                const role = user?.role;
+                const message = "Please set up MFA to access this feature.";
+                if (role === 'admin') {
+                    navigate('/settings/mfa', { state: { message } });
+                } else if (role === 'viewer') {
+                    navigate('/settings/viewer-mfa', { state: { message } });
+                }
+            } else {
+                console.error("Failed to fetch clients:", error);
+            }
         }
-    }, []);
+    }, [user, navigate]);
 
     useEffect(() => {
         fetchClients();
     }, [fetchClients]);
 
-    // **FIX**: Fetch full client details when the edit icon is clicked
     const handleEditClick = async (client) => {
         try {
             const response = await api.get(`/clients/${client.id}`);

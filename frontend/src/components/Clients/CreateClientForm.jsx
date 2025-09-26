@@ -157,7 +157,7 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <button type="submit" className="btn btn-primary" disabled={isLoading}>
                         {isLoading ? 'Submitting...' : 'Create Client'}
                     </button>
-                )}bcrypt
+                )}
             </div>
 
             {message && <div className="message success" style={{color: 'green', marginTop: '20px'}}>{message}</div>}

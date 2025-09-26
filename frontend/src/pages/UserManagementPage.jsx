@@ -50,7 +50,7 @@ const UserManagementPage = () => {
                             value={name}
                             onChange={(e) => setName(e.target.value)}
                             className="form-control"
-                            placeholder="Enter user's full name"
+                            placeholder="Full name"
                             required
                         />
                     </div>
@@ -61,7 +61,7 @@ const UserManagementPage = () => {
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
                             className="form-control"
-                            placeholder="Enter username"
+                            placeholder="Enter Username"
                             required
                         />
                     </div>
@@ -72,7 +72,7 @@ const UserManagementPage = () => {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             className="form-control"
-                            placeholder="Enter temporary password"
+                            placeholder="Enter Password"
                             required
                         />
                     </div>
