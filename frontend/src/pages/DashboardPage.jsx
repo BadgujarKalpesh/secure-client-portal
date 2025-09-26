@@ -19,10 +19,14 @@ const DashboardPage = () => {
                 setStats(response.data);
             } catch (error) {
                 if (error.response?.status === 403 && error.response?.data?.mfaEnabled === false) {
-                    if (user?.role === 'superAdmin') {
-                        navigate('/settings/superadmin-mfa', { state: { message: "Please set up MFA to access the portal." } });
-                    } else if (user?.role === 'viewer') {
-                        navigate('/settings/viewer-mfa', { state: { message: "Please set up MFA to access the portal." } });
+                    const role = user?.role;
+                    const message = "Please set up MFA to access the portal.";
+                    if (role === 'superAdmin') {
+                        navigate('/settings/superadmin-mfa', { state: { message } });
+                    } else if (role === 'admin') {
+                        navigate('/settings/mfa', { state: { message } });
+                    } else if (role === 'viewer') {
+                        navigate('/settings/viewer-mfa', { state: { message } });
                     }
                 } else {
                     console.error("Failed to fetch stats:", error);

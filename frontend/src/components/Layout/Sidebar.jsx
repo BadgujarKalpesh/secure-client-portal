@@ -22,17 +22,18 @@ const Sidebar = () => {
             <nav className="sidebar-nav">
                 <ul>
                     <li><NavLink to="/dashboard"><DashboardIcon /> Dashboard</NavLink></li>
-                    <li><NavLink to="/clients" end><ClientsIcon /> Show Clients</NavLink></li>
+                    
+                    {/* Admins and Viewers can see clients */}
+                    {!isSuperAdmin && (
+                        <li><NavLink to="/clients" end><ClientsIcon /> Show Clients</NavLink></li>
+                    )}
                     
                     {isSuperAdmin && (
                         <li><NavLink to="/user-management"><CreateIcon /> User Management</NavLink></li>
                     )}
                     
                     {isAdmin && (
-                        <>
-                            <li><NavLink to="/clients/create"><CreateIcon /> Create Client</NavLink></li>
-                            <li><NavLink to="/viewers"><ViewerIcon /> Manage Viewers</NavLink></li>
-                        </>
+                        <li><NavLink to="/clients/create"><CreateIcon /> Create Client</NavLink></li>
                     )}
                     
                     {/* Different settings link based on role */}

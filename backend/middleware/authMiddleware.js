@@ -53,9 +53,11 @@ const adminOnly = (req, res, next) => {
 const mfaEnabled = (req, res, next) => {
     // Check if the user object exists and if MFA is enabled
     if (req.user && req.user.is_mfa_enabled) {
+        req.mfaEnabled = true;
         next();
     } else {
         // If MFA is not enabled, deny access
+        req.mfaEnabled = false;
         res.status(403).json({ 
             message: 'MFA is not enabled. Please complete MFA setup to access this feature.',
             mfaRequired: false, // Indicates setup is needed, not just verification
