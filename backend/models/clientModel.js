@@ -117,20 +117,21 @@ const updateStatus = async (id, status) => {
     return rows[0];
 };
 
+
 const update = async (id, clientData) => {
     const {
-        organisationName,
-        organisationAddress,
-        organisationDomainId,
-        natureOfBusiness,
-        authorisedSignatoryFullName,
-        authorisedSignatoryMobile,
-        authorisedSignatoryEmail,
-        authorisedSignatoryDesignation,
-        billingContactName,
-        billingContactNumber,
-        billingContactEmail,
-        organisationType
+        organisation_name,
+        organisation_address,
+        organisation_domain_id,
+        nature_of_business,
+        authorised_signatory_full_name,
+        authorised_signatory_mobile,
+        authorised_signatory_email,
+        authorised_signatory_designation,
+        billing_contact_name,
+        billing_contact_number,
+        billing_contact_email,
+        organisation_type
     } = clientData;
 
     const query = `
@@ -148,27 +149,27 @@ const update = async (id, clientData) => {
             billing_contact_number = $10,
             billing_contact_email = $11,
             organisation_type = $12,
-            full_name = $5,
-            email = $7,
-            contact_number = $6,
-            business_name = $1,
+            full_name = $5, 
+            email = $7, 
+            contact_number = $6, 
+            business_name = $1, 
             address = $2
         WHERE id = $13
         RETURNING *;
     `;
     const values = [
-        organisationName,
-        organisationAddress,
-        organisationDomainId,
-        natureOfBusiness,
-        authorisedSignatoryFullName,
-        authorisedSignatoryMobile,
-        authorisedSignatoryEmail,
-        authorisedSignatoryDesignation,
-        billingContactName,
-        billingContactNumber,
-        billingContactEmail,
-        organisationType,
+        organisation_name,
+        organisation_address,
+        organisation_domain_id,
+        nature_of_business,
+        authorised_signatory_full_name,
+        authorised_signatory_mobile,
+        authorised_signatory_email,
+        authorised_signatory_designation,
+        billing_contact_name,
+        billing_contact_number,
+        billing_contact_email,
+        organisation_type,
         id
     ];
     

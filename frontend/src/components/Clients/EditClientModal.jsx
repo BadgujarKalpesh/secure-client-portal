@@ -21,7 +21,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
         try {
             await api.put(`/clients/${client.id}`, formData);
             setMessage('Client details updated successfully!');
-            setTimeout(() => onUpdate(), 1500); // Close modal after showing success message
+            setTimeout(() => onUpdate(), 1500);
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to update client details.');
         }
@@ -33,7 +33,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
         try {
             await api.put(`/clients/${client.id}/status`, { status: newStatus });
             setMessage(`Client status changed to ${newStatus}.`);
-            setTimeout(() => onUpdate(), 1500); // Close modal after showing success message
+            setTimeout(() => onUpdate(), 1500);
         } catch (err) {
             setError(err.response?.data?.message || `Failed to ${newStatus.toLowerCase()} client.`);
         }
