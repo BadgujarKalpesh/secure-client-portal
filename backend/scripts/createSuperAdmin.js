@@ -1,4 +1,4 @@
-// backend/scripts/createAdmin.js
+// backend/scripts/createSuperAdmin.js
 
 // 1. Load environment variables first with the correct path
 require('dotenv').config({ path: require('path').resolve(__dirname, '../.env') });
@@ -12,17 +12,17 @@ if (!process.env.DATABASE_URL) {
 const { pool } = require('../config/db'); // 3. Now import the pool
 const bcrypt = require('bcryptjs');
 
-const createAdminUser = async () => {
+const createSuperAdminUser = async () => {
     const client = await pool.connect();
     try {
-        const username = 'admin';
+        const username = 'superadmin';
         const password = '12345'; // Use a strong, temporary password
 
-        // Check if the admin user already exists
-        const existingAdminRes = await client.query('SELECT * FROM admins WHERE username = $1', [username]);
+        // Check if the super admin user already exists
+        const existingSuperAdminRes = await client.query('SELECT * FROM super_admins WHERE username = $1', [username]);
 
-        if (existingAdminRes.rows.length > 0) {
-            console.log('Admin user already exists.');
+        if (existingSuperAdminRes.rows.length > 0) {
+            console.log('Super Admin user already exists.');
             return;
         }
 
@@ -30,20 +30,20 @@ const createAdminUser = async () => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
-        // Insert the new admin user
+        // Insert the new super admin user
         await client.query(
-            'INSERT INTO admins (username, password) VALUES ($1, $2)',
+            'INSERT INTO super_admins (username, password) VALUES ($1, $2)',
             [username, hashedPassword]
         );
         
-        console.log('✅ Admin user created successfully!');
+        console.log('✅ Super Admin user created successfully!');
 
     } catch (error) {
-        console.error('Error creating admin user:', error.message);
+        console.error('Error creating super admin user:', error.message);
     } finally {
         client.release();
         await pool.end();
     }
 };
 
-createAdminUser();
+createSuperAdminUser();

@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const Admin = require('../models/adminModel');
 const Viewer = require('../models/viewerModel');
+const SuperAdmin = require('../models/superAdminModel');
 
 const protect = async (req, res, next) => {
     let token;
@@ -13,6 +14,8 @@ const protect = async (req, res, next) => {
                 req.user = await Admin.findById(decoded.id);
             } else if (decoded.role === 'viewer') {
                 req.user = await Viewer.findById(decoded.id);
+            } else if (decoded.role === 'superAdmin') {
+                req.user = await SuperAdmin.findById(decoded.id);
             }
             
             if (!req.user) {
@@ -27,6 +30,14 @@ const protect = async (req, res, next) => {
     }
     if (!token) {
         res.status(401).json({ message: 'Not authorized, no token' });
+    }
+};
+
+const superAdminOnly = (req, res, next) => {
+    if (req.user && req.user.role === 'superAdmin') {
+        next();
+    } else {
+        res.status(403).json({ message: 'Not authorized as a super admin' });
     }
 };
 
@@ -53,4 +64,9 @@ const mfaEnabled = (req, res, next) => {
     }
 };
 
-module.exports = { protect, adminOnly, mfaEnabled };
+module.exports = { 
+    protect, 
+    adminOnly, 
+    mfaEnabled,
+    superAdminOnly
+ };

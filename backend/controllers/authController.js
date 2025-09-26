@@ -4,6 +4,7 @@ const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
 const Admin = require('../models/adminModel');
 const Viewer = require('../models/viewerModel');
+const SuperAdmin = require('../models/superAdminModel');
 
 const generateToken = (id, username, role) => {
     return jwt.sign({ id, username, role }, process.env.JWT_SECRET, {
@@ -24,6 +25,8 @@ const loginUser = async (req, res) => {
             user = await Admin.findByUsername(username);
         } else if (role === 'viewer') {
             user = await Viewer.findByUsername(username);
+        } else if (role === 'superAdmin') {
+            user = await SuperAdmin.findByUsername(username);
         } else {
             return res.status(400).json({ message: 'Invalid role specified.' });
         }
@@ -63,7 +66,6 @@ const loginUser = async (req, res) => {
     }
 };
 
-// Admin-specific MFA setup
 const setupAdminMfa = async (req, res) => {
     try {
         // CHANGED: Use req.user instead of req.admin
@@ -145,10 +147,48 @@ const verifyAndEnableViewerMfa = async (req, res) => {
     }
 };
 
+const setupSuperAdminMfa = async (req, res) => {
+    try {
+        const secret = speakeasy.generateSecret({ name: `SecurePortal (Super Admin: ${req.user.username})` });
+        await SuperAdmin.updateMfaTempSecret(req.user.id, secret.ascii);
+
+        QRCode.toDataURL(secret.otpauth_url, (err, data_url) => {
+            if (err) return res.status(500).json({ message: 'Error generating QR code' });
+            res.status(200).json({ qrCodeUrl: data_url });
+        });
+    } catch (error) {
+         res.status(500).json({ message: 'Server error during MFA setup' });
+    }
+};
+
+const verifyAndEnableSuperAdminMfa = async (req, res) => {
+    const { mfaToken } = req.body;
+    const superAdmin = await SuperAdmin.findById(req.user.id);
+
+    if (!superAdmin.mfa_temp_secret) {
+        return res.status(400).json({ message: 'MFA setup has not been initiated.' });
+    }
+
+    const isVerified = speakeasy.totp.verify({
+        secret: superAdmin.mfa_temp_secret,
+        encoding: 'ascii',
+        token: mfaToken,
+    });
+
+    if (isVerified) {
+        await SuperAdmin.enableMfa(req.user.id, superAdmin.mfa_temp_secret);
+        res.status(200).json({ message: 'MFA enabled successfully!' });
+    } else {
+        res.status(400).json({ message: 'Invalid MFA token.' });
+    }
+};
+
 module.exports = {
     loginUser,
     setupAdminMfa,
     verifyAndEnableAdminMfa,
     setupViewerMfa,
     verifyAndEnableViewerMfa,
+    setupSuperAdminMfa,
+    verifyAndEnableSuperAdminMfa
 };

@@ -8,21 +8,19 @@ const LoginPage = () => {
     const [mfaToken, setMfaToken] = useState('');
     const [mfaRequired, setMfaRequired] = useState(false);
     const [error, setError] = useState('');
-    const [role, setRole] = useState('admin'); // 'admin' or 'viewer'
+    const [role, setRole] = useState('admin'); // 'admin', 'viewer', or 'superAdmin'
     const { login } = useAuth();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            // The payload now includes the role
             const payload = { username, password, mfaToken, role };
             const response = await api.post('/auth/login', payload);
 
             if (response.data.mfaRequired) {
                 setMfaRequired(true);
             } else {
-                // Pass both token and user data to the login context function
                 login(response.data.token, response.data.user);
             }
         } catch (err) {
@@ -30,10 +28,9 @@ const LoginPage = () => {
         }
     };
 
-    // Style for the toggle buttons
     const toggleButtonStyle = (selectedRole) => ({
         padding: '10px 20px',
-        width: '50%',
+        width: '33.33%',
         border: 'none',
         background: role === selectedRole ? 'var(--primary-blue)' : '#f0f0f0',
         color: role === selectedRole ? 'white' : 'black',
@@ -43,13 +40,13 @@ const LoginPage = () => {
     return (
         <div className="login-container">
             <div className="login-card">
-                {/* ROLE TOGGLE SWITCH */}
                 <div style={{ display: 'flex', marginBottom: '20px', borderRadius: '8px', overflow: 'hidden' }}>
-                    <button style={toggleButtonStyle('admin')} onClick={() => setRole('admin')}>Admin Login</button>
-                    <button style={toggleButtonStyle('viewer')} onClick={() => setRole('viewer')}>Viewer Login</button>
+                    <button style={toggleButtonStyle('admin')} onClick={() => setRole('admin')}>Admin</button>
+                    <button style={toggleButtonStyle('superAdmin')} onClick={() => setRole('superAdmin')}>Super Admin</button>
+                    <button style={toggleButtonStyle('viewer')} onClick={() => setRole('viewer')}>Viewer</button>
                 </div>
 
-                <h2>{role === 'admin' ? 'Admin Portal' : 'Viewer Portal'}</h2>
+                <h2>{role.charAt(0).toUpperCase() + role.slice(1)} Portal</h2>
                 
                 <form onSubmit={handleSubmit}>
                     {!mfaRequired ? (
