@@ -14,7 +14,7 @@ const createClient = async (req, res) => {
                     const file = fileArray[0];
                     const uniqueId = documentIds[fieldName + 'Id']; // Correctly map the ID
 
-                    if (!uniqueId) {
+                    if (!uniqueId && fieldName !== 'boardResolution') { // Board Resolution is optional
                         return res.status(400).json({ message: `Document ID for ${fieldName} is required.` });
                     }
 
@@ -22,7 +22,7 @@ const createClient = async (req, res) => {
                         document_type: fieldName,
                         url: file.path,
                         public_id: file.filename,
-                        document_unique_id: uniqueId
+                        document_unique_id: uniqueId || 'N/A' // Provide a default for optional fields
                     });
                 }
             }

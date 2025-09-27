@@ -12,9 +12,10 @@ const ClientsList = ({ clients, onEditClick }) => {
                 <table className="client-table">
                     <thead>
                         <tr>
-                            <th>Customer ID</th> {/* <-- ADDED HEADER */}
+                            <th>Customer ID</th>
                             <th>Full Name</th>
                             <th>Email</th>
+                            <th>Account Manager</th> {/* <-- ADDED HEADER */}
                             <th>Status</th>
                             <th>Actions</th>
                         </tr>
@@ -22,9 +23,10 @@ const ClientsList = ({ clients, onEditClick }) => {
                     <tbody>
                         {clients.map((client) => (
                             <tr key={client.id}>
-                                <td>{client.customer_id}</td> {/* <-- ADDED DATA CELL */}
+                                <td>{client.customer_id}</td>
                                 <td>{client.full_name}</td>
                                 <td>{client.email}</td>
+                                <td>{client.account_manager_name || 'N/A'}</td> {/* <-- ADDED DATA CELL */}
                                 <td>
                                     <span className={`status-badge status-${client.status}`}>
                                         {client.status}

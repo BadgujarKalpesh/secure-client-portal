@@ -164,7 +164,7 @@ body {
     background-color: var(--white);
     border-radius: var(--border-radius);
     box-shadow: var(--box-shadow);
-    padding: 25px;
+    padding: 15px;
 }
 
 .card h3 {
@@ -637,4 +637,9 @@ body {
     background-color: var(--primary-blue);
     color: var(--white);
     border-color: var(--primary-blue);
+}
+
+.document-input-group {
+    display: flex;
+    gap: 10px;
 }

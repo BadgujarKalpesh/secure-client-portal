@@ -1,11 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import api from '../../api/axiosConfig';
 
 const PdfViewerModal = ({ file, onClose }) => {
     if (!file) return null;
-
     const fileUrl = URL.createObjectURL(file);
-
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
@@ -14,7 +12,7 @@ const PdfViewerModal = ({ file, onClose }) => {
                     <button onClick={onClose} className="close-button">&times;</button>
                 </div>
                 <div className="modal-body" style={{ height: '70vh' }}>
-                    <iframe src={fileUrl} width="100%" height="100%" title={file.name} />
+                    <iframe src={fileUrl} width="100%" height="100%" title={file.name} style={{ border: 'none' }} />
                 </div>
             </div>
         </div>
@@ -37,6 +35,7 @@ const MultiStepForm = () => {
         billingContactEmail: '',
         organisationType: 'Pvt Ltd',
         utilityBillType: 'Electricity Bill',
+        accountManagerId: '',
     });
     const [files, setFiles] = useState({});
     const [documentIds, setDocumentIds] = useState({});
@@ -44,6 +43,19 @@ const MultiStepForm = () => {
     const [message, setMessage] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [pdfPreview, setPdfPreview] = useState(null);
+    const [accountManagers, setAccountManagers] = useState([]);
+
+    useEffect(() => {
+        const fetchAccountManagers = async () => {
+            try {
+                const response = await api.get('/account-managers');
+                setAccountManagers(response.data);
+            } catch (error) {
+                console.error("Failed to fetch account managers:", error);
+            }
+        };
+        fetchAccountManagers();
+    }, []);
 
     const handleTextChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -79,27 +91,41 @@ const MultiStepForm = () => {
     
     const validateStep = () => {
         let newErrors = {};
+        // Email and Phone validation regex
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const phoneRegex = /^[0-9]{10}$/;
+
         if (step === 1) {
             if (!formData.organisationName) newErrors.organisationName = "Organisation Name is required.";
             if (!formData.organisationAddress) newErrors.organisationAddress = "Organisation Address is required.";
             if (!formData.organisationDomainId) newErrors.organisationDomainId = "Organisation Domain ID is required.";
             if (!formData.natureOfBusiness) newErrors.natureOfBusiness = "Nature of Business is required.";
         } else if (step === 2) {
+            
+            if (!emailRegex.test(formData.authorisedSignatoryEmail)) {
+                newErrors.authorisedSignatoryEmail = "Please enter a valid email address.";
+            }
+            if (!phoneRegex.test(formData.authorisedSignatoryMobile)) {
+                newErrors.authorisedSignatoryMobile = "Please enter a valid 10-digit contact number.";
+            }
             if (!formData.authorisedSignatoryFullName) newErrors.authorisedSignatoryFullName = "Full Name is required.";
-            if (!formData.authorisedSignatoryMobile) newErrors.authorisedSignatoryMobile = "Mobile Number is required.";
-            if (!formData.authorisedSignatoryEmail) newErrors.authorisedSignatoryEmail = "Email ID is required.";
+            // if (!formData.authorisedSignatoryMobile) newErrors.authorisedSignatoryMobile = "Mobile Number is required.";
+            // if (!formData.authorisedSignatoryEmail) newErrors.authorisedSignatoryEmail = "Email ID is required.";
             if (!formData.authorisedSignatoryDesignation) newErrors.authorisedSignatoryDesignation = "Designation is required.";
         } else if (step === 3) {
             if (!formData.billingContactName) newErrors.billingContactName = "Billing Contact Name is required.";
             if (!formData.billingContactNumber) newErrors.billingContactNumber = "Billing Contact Number is required.";
             if (!formData.billingContactEmail) newErrors.billingContactEmail = "Billing Email ID is required.";
         } else if (step === 4) {
-            if (!files.certificateOfIncorporation) newErrors.certificateOfIncorporation = "Certificate of Incorporation is required.";
-            if (!files.gstCertificate) newErrors.gstCertificate = "GST Certificate is required.";
-            if (!files.panCard) newErrors.panCard = "PAN Card is required.";
-            if (!files.officeProof) newErrors.officeProof = "Office Proof is required.";
-            if (!files.utilityBill) newErrors.utilityBill = "Utility Bill is required.";
-            if (!files.signatoryLetter) newErrors.signatoryLetter = "Authorised Signatory Letter is required.";
+            const requiredDocs = ['certificateOfIncorporation', 'gstCertificate', 'panCard', 'officeProof', 'utilityBill', 'signatoryLetter'];
+            requiredDocs.forEach(doc => {
+                if (!documentIds[doc + 'Id']) {
+                    newErrors[doc + 'Id'] = "Document ID is required.";
+                }
+                if (!files[doc]) {
+                    newErrors[doc] = "File upload is required.";
+                }
+            });
         }
         
         setErrors(newErrors);
@@ -140,6 +166,7 @@ const MultiStepForm = () => {
                 setStep(1);
                 setFormData({ organisationName: '', organisationAddress: '', organisationDomainId: '', natureOfBusiness: '', authorisedSignatoryFullName: '', authorisedSignatoryMobile: '', authorisedSignatoryEmail: '', authorisedSignatoryDesignation: '', billingContactName: '', billingContactNumber: '', billingContactEmail: '', organisationType: 'Pvt Ltd', utilityBillType: 'Electricity Bill' });
                 setFiles({});
+                setDocumentIds({});
                 setMessage('');
             }, 2000);
         } catch (err) {
@@ -216,52 +243,78 @@ const MultiStepForm = () => {
             case 4:
                 return (
                     <>
-                        <h3 className="form-step-heading">Mandatory Documents</h3>
+                        <h3 className="form-step-heading">Documents & Account Manager</h3>
                         <div className="document-upload-grid">
-                            <div className="form-group">
+                            <div className="document-field">
                                 <label>Certificate of Incorporation</label>
-                                <input name="certificateOfIncorporationId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
-                                <input name="certificateOfIncorporation" type="file" onChange={handleFileChange} className="form-control" style={{marginTop: '5px'}} />
+                                <div className="document-input-group">
+                                    <input name="certificateOfIncorporationId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
+                                    <input name="certificateOfIncorporation" type="file" onChange={handleFileChange} className="form-control" />
+                                </div>
+                                {errors.certificateOfIncorporationId && <p className="error-message">{errors.certificateOfIncorporationId}</p>}
                                 {errors.certificateOfIncorporation && <p className="error-message">{errors.certificateOfIncorporation}</p>}
                             </div>
-                            <div className="form-group">
+                            <div className="document-field">
                                 <label>GST Certificate</label>
-                                <input name="gstCertificateId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
-                                <input name="gstCertificate" type="file" onChange={handleFileChange} className="form-control" style={{marginTop: '5px'}} />
+                                <div className="document-input-group">
+                                    <input name="gstCertificateId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
+                                    <input name="gstCertificate" type="file" onChange={handleFileChange} className="form-control" />
+                                </div>
+                                {errors.gstCertificateId && <p className="error-message">{errors.gstCertificateId}</p>}
                                 {errors.gstCertificate && <p className="error-message">{errors.gstCertificate}</p>}
                             </div>
-                            <div className="form-group">
+                            <div className="document-field">
                                 <label>PAN Card</label>
-                                <input name="panCardId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
-                                <input name="panCard" type="file" onChange={handleFileChange} className="form-control" style={{marginTop: '5px'}} />
+                                <div className="document-input-group">
+                                    <input name="panCardId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
+                                    <input name="panCard" type="file" onChange={handleFileChange} className="form-control" />
+                                </div>
+                                {errors.panCardId && <p className="error-message">{errors.panCardId}</p>}
                                 {errors.panCard && <p className="error-message">{errors.panCard}</p>}
                             </div>
-                            <div className="form-group">
+                            <div className="document-field">
                                 <label>Lease Agreement / Office Ownership Proof</label>
-                                <input name="officeProofId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
-                                <input name="officeProof" type="file" onChange={handleFileChange} className="form-control" style={{marginTop: '5px'}} />
+                                <div className="document-input-group">
+                                    <input name="officeProofId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
+                                    <input name="officeProof" type="file" onChange={handleFileChange} className="form-control" />
+                                </div>
+                                {errors.officeProofId && <p className="error-message">{errors.officeProofId}</p>}
                                 {errors.officeProof && <p className="error-message">{errors.officeProof}</p>}
                             </div>
-                            <div className="form-group">
+                            <div className="document-field">
                                 <label>Utility Bill Document</label>
-                                <select name="utilityBillType" value={formData.utilityBillType} onChange={handleTextChange} className="form-control" style={{marginBottom: '5px'}}>
-                                    <option>Electricity Bill</option>
-                                    <option>Telephone Bill</option>
-                                </select>
-                                <input name="utilityBillId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
-                                <input name="utilityBill" type="file" onChange={handleFileChange} className="form-control" style={{marginTop: '5px'}} />
+                                <div className="document-input-group">
+                                    <input name="utilityBillId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
+                                    <input name="utilityBill" type="file" onChange={handleFileChange} className="form-control" />
+                                </div>
+                                {errors.utilityBillId && <p className="error-message">{errors.utilityBillId}</p>}
                                 {errors.utilityBill && <p className="error-message">{errors.utilityBill}</p>}
                             </div>
-                            <div className="form-group">
+                            <div className="document-field">
                                 <label>Authorised Signatory Letter</label>
-                                <input name="signatoryLetterId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
-                                <input name="signatoryLetter" type="file" onChange={handleFileChange} className="form-control" style={{marginTop: '5px'}} />
+                                <div className="document-input-group">
+                                    <input name="signatoryLetterId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
+                                    <input name="signatoryLetter" type="file" onChange={handleFileChange} className="form-control" />
+                                </div>
+                                {errors.signatoryLetterId && <p className="error-message">{errors.signatoryLetterId}</p>}
                                 {errors.signatoryLetter && <p className="error-message">{errors.signatoryLetter}</p>}
                             </div>
-                            <div className="form-group">
+                            <div className="document-field">
                                 <label>Board Resolution (Optional)</label>
-                                <input name="boardResolutionId" placeholder="Enter Document ID (if applicable)" onChange={handleIdChange} className="form-control" />
-                                <input name="boardResolution" type="file" onChange={handleFileChange} className="form-control" style={{marginTop: '5px'}} />
+                                <div className="document-input-group">
+                                    <input name="boardResolutionId" placeholder="Enter Document ID (if applicable)" onChange={handleIdChange} className="form-control" />
+                                    <input name="boardResolution" type="file" onChange={handleFileChange} className="form-control" />
+                                </div>
+                            </div>
+                            <div className="form-group">
+                                <label>Assign Account Manager</label>
+                                <select name="accountManagerId" value={formData.accountManagerId} onChange={handleTextChange} className="form-control">
+                                    <option value="">Select an Account Manager</option>
+                                    {accountManagers.map(manager => (
+                                        <option key={manager.id} value={manager.id}>{manager.name}</option>
+                                    ))}
+                                </select>
+                                {errors.accountManagerId && <p className="error-message">{errors.accountManagerId}</p>}
                             </div>
                         </div>
                     </>
