@@ -38,6 +38,14 @@ const MultiStepForm = ({ onClientAdded }) => {
     const nextStep = () => setStep(step + 1);
     const prevStep = () => setStep(step - 1);
 
+    const handleViewPdf = (fileName) => {
+        const file = files[fileName];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            window.open(url, '_blank');
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setMessage('');
@@ -45,11 +53,9 @@ const MultiStepForm = ({ onClientAdded }) => {
         setIsLoading(true);
         
         const data = new FormData();
-        // Append all text data
         for (const key in formData) {
             data.append(key, formData[key]);
         }
-        // Append all file data
         for (const key in files) {
             if (files[key]) {
                 data.append(key, files[key]);
@@ -62,17 +68,18 @@ const MultiStepForm = ({ onClientAdded }) => {
                 onClientAdded(response.data);
             }
             setMessage('Client created successfully!');
-            // Reset form logic can be added here
-            setStep(1);
-            setFormData({ fullName: '', contactNumber: '', email: '', address: '', businessName: '', gstNumber: '', panNumber: '', fssaiCode: '' });
-            // setFiles([]);
-            e.target.reset();
-            setFiles({});
+            setTimeout(() => {
+                setStep(1);
+                setFormData({ organisationName: '', organisationAddress: '', organisationDomainId: '', natureOfBusiness: '', authorisedSignatoryFullName: '', authorisedSignatoryMobile: '', authorisedSignatoryEmail: '', authorisedSignatoryDesignation: '', billingContactName: '', billingContactNumber: '', billingContactEmail: '', organisationType: 'Pvt Ltd', utilityBillType: 'Electricity Bill' });
+                setFiles({});
+                setMessage('');
+                e.target.reset(); // This might not work as expected, manual reset is better.
+            }, 2000);
         } catch (err) {
             console.error('Error creating client:', err);
             setError(err.response?.data?.message || 'Error creating client.');
         } finally {
-            setIsLoading(false); // **FIX**: Set loading to false in finally block
+            setIsLoading(false);
         }
     };
 
@@ -83,7 +90,6 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <>
                         <h3>Section A – Organisation Details</h3>
                         <div className="form-grid">
-                            {/* Form fields for Section A */}
                             <div className="form-group"><label>Organisation Name</label><input name="organisationName" value={formData.organisationName} onChange={handleTextChange} required className="form-control" /></div>
                             <div className="form-group"><label>Organisation Address</label><input name="organisationAddress" value={formData.organisationAddress} onChange={handleTextChange} required className="form-control" /></div>
                             <div className="form-group"><label>Organisation Domain ID</label><input name="organisationDomainId" value={formData.organisationDomainId} onChange={handleTextChange} required className="form-control" /></div>
@@ -96,7 +102,6 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <>
                         <h3>Section B – Authorised Signatory</h3>
                         <div className="form-grid">
-                            {/* Form fields for Section B */}
                             <div className="form-group"><label>Full Name</label><input name="authorisedSignatoryFullName" value={formData.authorisedSignatoryFullName} onChange={handleTextChange} required className="form-control" /></div>
                             <div className="form-group"><label>Mobile Number</label><input name="authorisedSignatoryMobile" type="tel" pattern="[0-9]{10}" value={formData.authorisedSignatoryMobile} onChange={handleTextChange} required className="form-control" /></div>
                             <div className="form-group"><label>Email ID</label><input name="authorisedSignatoryEmail" type="email" value={formData.authorisedSignatoryEmail} onChange={handleTextChange} required className="form-control" /></div>
@@ -109,7 +114,6 @@ const MultiStepForm = ({ onClientAdded }) => {
                      <>
                         <h3>Section C – Billing Contact</h3>
                         <div className="form-grid">
-                           {/* Form fields for Section C */}
                             <div className="form-group"><label>Billing Contact Name</label><input name="billingContactName" value={formData.billingContactName} onChange={handleTextChange} required className="form-control" /></div>
                             <div className="form-group"><label>Billing Contact Number</label><input name="billingContactNumber" type="tel" pattern="[0-9]{10}" value={formData.billingContactNumber} onChange={handleTextChange} required className="form-control" /></div>
                             <div className="form-group"><label>Billing Email ID</label><input name="billingContactEmail" type="email" value={formData.billingContactEmail} onChange={handleTextChange} required className="form-control" /></div>
@@ -121,16 +125,56 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <>
                         <h3>Mandatory Documents</h3>
                         <div className="document-upload-grid">
-                            {/* File upload fields */}
-                            <div className="form-group"><label>Organisation Type</label><select name="organisationType" value={formData.organisationType} onChange={handleTextChange} className="form-control"><option>Pvt Ltd</option><option>LLP</option><option>Partnership</option><option>Proprietorship</option></select></div>
+                            <div className="form-group"><label>Organisation Type</label><select name="organisationType" value={formData.organisationType} onChange={handleTextChange} required className="form-control"><option>Pvt Ltd</option><option>LLP</option><option>Partnership</option><option>Proprietorship</option></select></div>
                             <div className="form-group"><label>Certificate of Incorporation</label><input name="certificateOfIncorporation" type="file" onChange={handleFileChange} required className="form-control" /></div>
                             <div className="form-group"><label>GST Certificate</label><input name="gstCertificate" type="file" onChange={handleFileChange} required className="form-control" /></div>
                             <div className="form-group"><label>PAN Card</label><input name="panCard" type="file" onChange={handleFileChange} required className="form-control" /></div>
                             <div className="form-group"><label>Lease Agreement / Office Ownership Proof</label><input name="officeProof" type="file" onChange={handleFileChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Utility Bill Type</label><select name="utilityBillType" value={formData.utilityBillType} onChange={handleTextChange} className="form-control"><option>Electricity Bill</option><option>Telephone Bill</option></select></div>
+                            <div className="form-group"><label>Utility Bill Type</label><select name="utilityBillType" value={formData.utilityBillType} onChange={handleTextChange} required className="form-control"><option>Electricity Bill</option><option>Telephone Bill</option></select></div>
                             <div className="form-group"><label>Utility Bill Document</label><input name="utilityBill" type="file" onChange={handleFileChange} required className="form-control" /></div>
                             <div className="form-group"><label>Authorised Signatory Letter</label><input name="signatoryLetter" type="file" onChange={handleFileChange} required className="form-control" /></div>
                             <div className="form-group"><label>Board Resolution (Optional)</label><input name="boardResolution" type="file" onChange={handleFileChange} className="form-control" /></div>
+                        </div>
+                    </>
+                );
+            case 5:
+                return (
+                    <>
+                        <h3>Preview Details</h3>
+                        <div className="preview-grid">
+                            {/* Organisation Details */}
+                            <div className="preview-section">
+                                <h4>Organisation Details</h4>
+                                <p><strong>Name:</strong> {formData.organisationName}</p>
+                                <p><strong>Address:</strong> {formData.organisationAddress}</p>
+                                <p><strong>Domain ID:</strong> {formData.organisationDomainId}</p>
+                                <p><strong>Nature of Business:</strong> {formData.natureOfBusiness}</p>
+                            </div>
+                            {/* Signatory Details */}
+                            <div className="preview-section">
+                                <h4>Authorised Signatory</h4>
+                                <p><strong>Full Name:</strong> {formData.authorisedSignatoryFullName}</p>
+                                <p><strong>Mobile:</strong> {formData.authorisedSignatoryMobile}</p>
+                                <p><strong>Email:</strong> {formData.authorisedSignatoryEmail}</p>
+                                <p><strong>Designation:</strong> {formData.authorisedSignatoryDesignation}</p>
+                            </div>
+                            {/* Billing Details */}
+                            <div className="preview-section">
+                                <h4>Billing Contact</h4>
+                                <p><strong>Name:</strong> {formData.billingContactName}</p>
+                                <p><strong>Number:</strong> {formData.billingContactNumber}</p>
+                                <p><strong>Email:</strong> {formData.billingContactEmail}</p>
+                            </div>
+                            {/* Documents */}
+                            <div className="preview-section">
+                                <h4>Documents</h4>
+                                {Object.entries(files).map(([key, file]) => (
+                                    file && <div key={key} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <span>{key.replace(/([A-Z])/g, ' $1').trim()}: {file.name}</span>
+                                        <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(key)}>View PDF</button>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </>
                 );
@@ -146,16 +190,17 @@ const MultiStepForm = ({ onClientAdded }) => {
                 <div className={`progress-step ${step >= 2 ? 'active' : ''}`}>Signatory</div>
                 <div className={`progress-step ${step >= 3 ? 'active' : ''}`}>Billing</div>
                 <div className={`progress-step ${step >= 4 ? 'active' : ''}`}>Documents</div>
+                <div className={`progress-step ${step >= 5 ? 'active' : ''}`}>Preview</div>
             </div>
 
             {renderStep()}
             
             <div className="form-navigation">
                 {step > 1 && <button type="button" className="btn btn-secondary" onClick={prevStep}>Previous</button>}
-                {step < 4 && <button type="button" className="btn btn-primary" onClick={nextStep}>Next</button>}
-                {step === 4 && (
+                {step < 5 && <button type="button" className="btn btn-primary" onClick={nextStep}>Next</button>}
+                {step === 5 && (
                     <button type="submit" className="btn btn-primary" disabled={isLoading}>
-                        {isLoading ? 'Submitting...' : 'Create Client'}
+                        {isLoading ? 'Submitting...' : 'Submit Client Details'}
                     </button>
                 )}
             </div>

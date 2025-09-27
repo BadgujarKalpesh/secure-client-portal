@@ -7,11 +7,9 @@ import DashboardPage from './pages/DashboardPage';
 import ClientsListPage from './pages/ClientsListPage';
 import CreateClientPage from './pages/CreateClientPage';
 import MfaSettingsPage from './pages/MfaSettingsPage';
-import ViewersPage from './pages/ViewersPage';
 import ViewerMfaSettingsPage from './pages/ViewerMfaSettingsPage';
 import SuperAdminMfaSettingsPage from './pages/SuperAdminMfaSettingsPage';
-import UserManagementPage from './pages/UserManagementPage';
-import UserListPage from './pages/UserListPage';
+import ManageUsersPage from './pages/ManageUsersPage'; // <-- IMPORT NEW PAGE
 import AccountManagerPage from './pages/AccountManagerPage';
 
 function App() {
@@ -24,12 +22,10 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/clients" element={<ClientsListPage />} />
           <Route path="/clients/create" element={<CreateClientPage />} />
-          <Route path="/viewers" element={<ViewersPage />} />
           <Route path="/settings/mfa" element={<MfaSettingsPage />} />
           <Route path="/settings/viewer-mfa" element={<ViewerMfaSettingsPage />} />
           <Route path="/settings/superadmin-mfa" element={<SuperAdminMfaSettingsPage />} />
-          <Route path="/user-management" element={<UserManagementPage />} />
-          <Route path="/user-list" element={<UserListPage />} />
+          <Route path="/manage-users" element={<ManageUsersPage />} /> {/* <-- NEW ROUTE */}
           <Route path="/account-managers" element={<AccountManagerPage />} />
         </Route>
       </Route>

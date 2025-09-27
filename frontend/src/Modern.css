@@ -442,3 +442,35 @@ body {
     gap: 20px;
     align-items: center;
 }
+
+/* ... (existing CSS) */
+
+.preview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    text-align: left;
+}
+
+.preview-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
+
+.preview-section h4 {
+    margin-top: 0;
+    color: var(--primary-blue);
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.preview-section p {
+    margin: 0 0 10px;
+}
+
+.preview-section p strong {
+    color: #333;
+}

@@ -10,6 +10,7 @@ const SettingsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" he
 const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
 const AccountManagerIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg>;
 
+
 const Sidebar = () => {
     const { user, logout } = useAuth();
     const isAdmin = user?.role === 'admin';
@@ -18,22 +19,20 @@ const Sidebar = () => {
     return (
         <aside className="sidebar">
             <div className="sidebar-header">
-                {isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Client Portal')}
+                {isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Viewer Portal')}
             </div>
             <nav className="sidebar-nav">
                 <ul>
                     <li><NavLink to="/dashboard"><DashboardIcon /> Dashboard</NavLink></li>
                     
-                    {/* Admins and Viewers can see clients, but not Super Admins */}
                     {!isSuperAdmin && (
                         <li><NavLink to="/clients" end><ClientsIcon /> Show Clients</NavLink></li>
                     )}
                     
                     {isSuperAdmin && (
                         <>
-                            <li><NavLink to="/user-management"><CreateIcon /> Create User</NavLink></li>
-                            <li><NavLink to="/user-list"><UserIcon /> User List</NavLink></li>
-                            <li><NavLink to="/account-managers"><AccountManagerIcon /> Account Managers</NavLink></li> {/* <-- ADD THIS LINE */}
+                            <li><NavLink to="/manage-users"><UserIcon /> Manage Users</NavLink></li>
+                            <li><NavLink to="/account-managers"><AccountManagerIcon /> Account Managers</NavLink></li>
                         </>
                     )}
                     
@@ -41,7 +40,6 @@ const Sidebar = () => {
                         <li><NavLink to="/clients/create"><CreateIcon /> Create Client</NavLink></li>
                     )}
                     
-                    {/* Different settings link based on role */}
                     {isSuperAdmin ? (
                          <li><NavLink to="/settings/superadmin-mfa"><SettingsIcon /> Settings</NavLink></li>
                     ) : isAdmin ? (
