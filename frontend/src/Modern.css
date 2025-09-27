@@ -569,3 +569,72 @@ body {
     font-size: 0.8em;
     margin-top: 4px;
 }
+
+/* ... (existing styles) */
+
+.form-step-heading {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--primary-blue);
+    font-weight: 600;
+}
+
+.form-content {
+    padding: 20px;
+    border-radius: var(--border-radius);
+    background-color: #fff;
+    margin-bottom: 20px;
+}
+
+.document-upload-grid .form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.error-message {
+    color: var(--error-color);
+    font-size: 0.8em;
+    margin-top: 4px;
+}
+
+/* ... (existing styles) */
+
+.document-field {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: flex-end;
+    list-style: none;
+    padding: 0;
+    margin-top: 20px;
+}
+
+.page-item {
+    margin: 0 5px;
+}
+
+.page-link {
+    color: var(--primary-blue);
+    background-color: var(--white);
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.page-link:hover {
+    background-color: var(--light-blue);
+    border-color: var(--primary-blue);
+}
+
+.page-item.active .page-link {
+    background-color: var(--primary-blue);
+    color: var(--white);
+    border-color: var(--primary-blue);
+}

@@ -143,7 +143,7 @@ const MultiStepForm = () => {
                 setMessage('');
             }, 2000);
         } catch (err) {
-            setError(err.response?.data?.message || 'Error creating client.');
+            setErrors(err.response?.data?.message || 'Error creating client.');
         } finally {
             setIsLoading(false);
         }

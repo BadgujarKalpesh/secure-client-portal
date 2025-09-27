@@ -12,11 +12,17 @@ const createClient = async (req, res) => {
                 const fileArray = req.files[fieldName];
                 if (fileArray && fileArray.length > 0) {
                     const file = fileArray[0];
+                    const uniqueId = documentIds[fieldName + 'Id']; // Correctly map the ID
+
+                    if (!uniqueId) {
+                        return res.status(400).json({ message: `Document ID for ${fieldName} is required.` });
+                    }
+
                     documents.push({
                         document_type: fieldName,
                         url: file.path,
                         public_id: file.filename,
-                        document_unique_id: documentIds[fieldName] // Get the ID from the parsed object
+                        document_unique_id: uniqueId
                     });
                 }
             }
