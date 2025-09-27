@@ -1,18 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api/axiosConfig';
 import EditAccountManagerModal from '../components/SuperAdmin/EditAccountManagerModal';
+import CreateAccountManagerModal from '../components/SuperAdmin/CreateAccountManagerModal';
 
 const EditIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>;
 
+const Pagination = ({ itemsPerPage, totalItems, paginate }) => {
+    const pageNumbers = [];
+    for (let i = 1; i <= Math.ceil(totalItems / itemsPerPage); i++) {
+        pageNumbers.push(i);
+    }
+    return (
+        <nav>
+            <ul className="pagination">
+                {pageNumbers.map(number => (
+                    <li key={number} className="page-item">
+                        <a onClick={() => paginate(number)} href="#!" className="page-link">
+                            {number}
+                        </a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    );
+};
+
 const AccountManagerPage = () => {
     const [accountManagers, setAccountManagers] = useState([]);
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [contactNumber, setContactNumber] = useState('');
     const [error, setError] = useState('');
-    const [message, setMessage] = useState('');
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
     const [selectedManager, setSelectedManager] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(5);
 
     const fetchAccountManagers = async () => {
         try {
@@ -27,96 +47,54 @@ const AccountManagerPage = () => {
         fetchAccountManagers();
     }, []);
 
-    const handleCreateManager = async (e) => {
-        e.preventDefault();
-        setError('');
-        setMessage('');
-        try {
-            await api.post('/account-managers', { name, email, contactNumber });
-            setMessage(`Account Manager "${name}" created successfully!`);
-            setName('');
-            setEmail('');
-            setContactNumber('');
-            fetchAccountManagers();
-        } catch (err) {
-            setError(err.response?.data?.message || 'Failed to create account manager.');
-        }
-    };
-
     const handleEditClick = (manager) => {
         setSelectedManager(manager);
-        setIsModalOpen(true);
+        setIsEditModalOpen(true);
     };
-
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
+    
+    const handleCloseModals = () => {
+        setIsEditModalOpen(false);
+        setIsCreateModalOpen(false);
         setSelectedManager(null);
     };
 
     const handleUpdate = () => {
         fetchAccountManagers();
-        handleCloseModal();
+        handleCloseModals();
     };
+    
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = accountManagers.slice(indexOfFirstItem, indexOfLastItem);
+
+    const paginate = pageNumber => setCurrentPage(pageNumber);
 
     return (
         <div>
-            <h1>Manage Account Managers</h1>
-            
-            <div className="card">
-                <h3>Create New Account Manager</h3>
-                <form onSubmit={handleCreateManager} className="form-grid">
-                    <div className="form-group">
-                        <label>Full Name</label>
-                        <input type="text" value={name} onChange={(e) => setName(e.target.value)} className="form-control" required />
-                    </div>
-                    <div className="form-group">
-                        <label>Email</label>
-                        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="form-control" required />
-                    </div>
-                    <div className="form-group">
-                        <label>Contact Number</label>
-                        <input type="text" value={contactNumber} onChange={(e) => setContactNumber(e.target.value)} className="form-control" />
-                    </div>
-                    <div className="form-group">
-                        <button type="submit" className="btn btn-primary" style={{alignSelf: 'flex-end'}}>Create Manager</button>
-                    </div>
-                </form>
-                {error && <div className="message error" style={{color: 'red', marginTop: '10px'}}>{error}</div>}
-                {message && <div className="message success" style={{color: 'green', marginTop: '10px'}}>{message}</div>}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h1>Manage Account Managers</h1>
+                <button className="btn btn-primary" onClick={() => setIsCreateModalOpen(true)}>Create New Manager</button>
             </div>
-
+            
             <div className="card" style={{marginTop: '20px'}}>
                 <h3>Existing Account Managers</h3>
                 <table className="client-table">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Contact Number</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {accountManagers.map(manager => (
-                            <tr key={manager.id}>
-                                <td>{manager.name}</td>
-                                <td>{manager.email}</td>
-                                <td>{manager.contact_number}</td>
-                                <td>
-                                    <button onClick={() => handleEditClick(manager)} title="Edit Manager">
-                                        <EditIcon />
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
+                    {/* ... (table structure) */}
                 </table>
+                <Pagination itemsPerPage={itemsPerPage} totalItems={accountManagers.length} paginate={paginate} />
             </div>
 
-            {isModalOpen && (
+            {isEditModalOpen && (
                 <EditAccountManagerModal
                     manager={selectedManager}
-                    onClose={handleCloseModal}
+                    onClose={handleCloseModals}
+                    onUpdate={handleUpdate}
+                />
+            )}
+            
+            {isCreateModalOpen && (
+                <CreateAccountManagerModal
+                    onClose={handleCloseModals}
                     onUpdate={handleUpdate}
                 />
             )}

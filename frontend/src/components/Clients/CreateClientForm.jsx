@@ -39,8 +39,8 @@ const MultiStepForm = ({ onClientAdded }) => {
         utilityBillType: 'Electricity Bill',
     });
     const [files, setFiles] = useState({});
+    const [errors, setErrors] = useState({});
     const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [pdfPreview, setPdfPreview] = useState(null);
 
@@ -52,24 +52,39 @@ const MultiStepForm = ({ onClientAdded }) => {
         setFiles({ ...files, [e.target.name]: e.target.files[0] });
     };
 
-    const nextStep = () => {
-        // Form validation before proceeding to the next step
-        const currentFields = Object.keys(formData).filter(key => {
-            if (step === 1) return ['organisationName', 'organisationAddress', 'organisationDomainId', 'natureOfBusiness'].includes(key);
-            if (step === 2) return ['authorisedSignatoryFullName', 'authorisedSignatoryMobile', 'authorisedSignatoryEmail', 'authorisedSignatoryDesignation'].includes(key);
-            if (step === 3) return ['billingContactName', 'billingContactNumber', 'billingContactEmail'].includes(key);
-            return false;
-        });
-
-        const isStepValid = currentFields.every(field => formData[field].trim() !== '');
-        
-        if (!isStepValid) {
-            setError('Please fill out all mandatory fields.');
-            return;
+    const validateStep = () => {
+        let newErrors = {};
+        if (step === 1) {
+            if (!formData.organisationName) newErrors.organisationName = "Organisation Name is required.";
+            if (!formData.organisationAddress) newErrors.organisationAddress = "Organisation Address is required.";
+            if (!formData.organisationDomainId) newErrors.organisationDomainId = "Organisation Domain ID is required.";
+            if (!formData.natureOfBusiness) newErrors.natureOfBusiness = "Nature of Business is required.";
+        } else if (step === 2) {
+            if (!formData.authorisedSignatoryFullName) newErrors.authorisedSignatoryFullName = "Full Name is required.";
+            if (!formData.authorisedSignatoryMobile) newErrors.authorisedSignatoryMobile = "Mobile Number is required.";
+            if (!formData.authorisedSignatoryEmail) newErrors.authorisedSignatoryEmail = "Email ID is required.";
+            if (!formData.authorisedSignatoryDesignation) newErrors.authorisedSignatoryDesignation = "Designation is required.";
+        } else if (step === 3) {
+            if (!formData.billingContactName) newErrors.billingContactName = "Billing Contact Name is required.";
+            if (!formData.billingContactNumber) newErrors.billingContactNumber = "Billing Contact Number is required.";
+            if (!formData.billingContactEmail) newErrors.billingContactEmail = "Billing Email ID is required.";
+        } else if (step === 4) {
+            if (!files.certificateOfIncorporation) newErrors.certificateOfIncorporation = "Certificate of Incorporation is required.";
+            if (!files.gstCertificate) newErrors.gstCertificate = "GST Certificate is required.";
+            if (!files.panCard) newErrors.panCard = "PAN Card is required.";
+            if (!files.officeProof) newErrors.officeProof = "Office Proof is required.";
+            if (!files.utilityBill) newErrors.utilityBill = "Utility Bill is required.";
+            if (!files.signatoryLetter) newErrors.signatoryLetter = "Authorised Signatory Letter is required.";
         }
+        
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
-        setError('');
-        setStep(step + 1);
+    const nextStep = () => {
+        if (validateStep()) {
+            setStep(step + 1);
+        }
     };
     
     const prevStep = () => setStep(step - 1);
@@ -80,9 +95,6 @@ const MultiStepForm = ({ onClientAdded }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setMessage('');
-        setError('');
-        setIsLoading(true);
         
         const data = new FormData();
         for (const key in formData) {
@@ -95,6 +107,7 @@ const MultiStepForm = ({ onClientAdded }) => {
         }
 
         try {
+            setIsLoading(true);
             await api.post('/clients', data);
             setMessage('Client created successfully!');
             setTimeout(() => {
@@ -117,10 +130,37 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <>
                         <h3>Section A – Organisation Details</h3>
                         <div className="form-grid">
-                            <div className="form-group"><label>Organisation Name</label><input name="organisationName" value={formData.organisationName} onChange={handleTextChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Organisation Address</label><input name="organisationAddress" value={formData.organisationAddress} onChange={handleTextChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Organisation Domain ID</label><input name="organisationDomainId" value={formData.organisationDomainId} onChange={handleTextChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Nature of Business</label><select name="natureOfBusiness" value={formData.natureOfBusiness} onChange={handleTextChange} required className="form-control"><option value="">Select...</option><option>Edtech</option><option>Healthcare</option><option>Consumer Durable</option><option>Call Centres</option><option>IT</option><option>Insurance</option><option>Banking</option><option>Finance</option><option>Other</option></select></div>
+                            <div className="form-group">
+                                <label>Organisation Name</label>
+                                <input name="organisationName" value={formData.organisationName} onChange={handleTextChange} className="form-control" />
+                                {errors.organisationName && <p className="error-message">{errors.organisationName}</p>}
+                            </div>
+                            <div className="form-group">
+                                <label>Organisation Address</label>
+                                <input name="organisationAddress" value={formData.organisationAddress} onChange={handleTextChange} className="form-control" />
+                                {errors.organisationAddress && <p className="error-message">{errors.organisationAddress}</p>}
+                            </div>
+                            <div className="form-group">
+                                <label>Organisation Domain ID</label>
+                                <input name="organisationDomainId" value={formData.organisationDomainId} onChange={handleTextChange} className="form-control" />
+                                {errors.organisationDomainId && <p className="error-message">{errors.organisationDomainId}</p>}
+                            </div>
+                            <div className="form-group">
+                                <label>Nature of Business</label>
+                                <select name="natureOfBusiness" value={formData.natureOfBusiness} onChange={handleTextChange} className="form-control">
+                                    <option value="">Select...</option>
+                                    <option>Edtech</option>
+                                    <option>Healthcare</option>
+                                    <option>Consumer Durable</option>
+                                    <option>Call Centres</option>
+                                    <option>IT</option>
+                                    <option>Insurance</option>
+                                    <option>Banking</option>
+                                    <option>Finance</option>
+                                    <option>Other</option>
+                                </select>
+                                {errors.natureOfBusiness && <p className="error-message">{errors.natureOfBusiness}</p>}
+                            </div>
                         </div>
                     </>
                 );
@@ -129,10 +169,10 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <>
                         <h3>Section B – Authorised Signatory</h3>
                         <div className="form-grid">
-                            <div className="form-group"><label>Full Name</label><input name="authorisedSignatoryFullName" value={formData.authorisedSignatoryFullName} onChange={handleTextChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Mobile Number</label><input name="authorisedSignatoryMobile" type="tel" pattern="[0-9]{10}" value={formData.authorisedSignatoryMobile} onChange={handleTextChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Email ID</label><input name="authorisedSignatoryEmail" type="email" value={formData.authorisedSignatoryEmail} onChange={handleTextChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Designation</label><input name="authorisedSignatoryDesignation" value={formData.authorisedSignatoryDesignation} onChange={handleTextChange} required className="form-control" /></div>
+                            <div className="form-group"><label>Full Name</label><input name="authorisedSignatoryFullName" value={formData.authorisedSignatoryFullName} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryFullName && <p className="error-message">{errors.authorisedSignatoryFullName}</p>}</div>
+                            <div className="form-group"><label>Mobile Number</label><input name="authorisedSignatoryMobile" type="tel" pattern="[0-9]{10}" value={formData.authorisedSignatoryMobile} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryMobile && <p className="error-message">{errors.authorisedSignatoryMobile}</p>}</div>
+                            <div className="form-group"><label>Email ID</label><input name="authorisedSignatoryEmail" type="email" value={formData.authorisedSignatoryEmail} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryEmail && <p className="error-message">{errors.authorisedSignatoryEmail}</p>}</div>
+                            <div className="form-group"><label>Designation</label><input name="authorisedSignatoryDesignation" value={formData.authorisedSignatoryDesignation} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryDesignation && <p className="error-message">{errors.authorisedSignatoryDesignation}</p>}</div>
                         </div>
                     </>
                 );
@@ -141,9 +181,9 @@ const MultiStepForm = ({ onClientAdded }) => {
                      <>
                         <h3>Section C – Billing Contact</h3>
                         <div className="form-grid">
-                            <div className="form-group"><label>Billing Contact Name</label><input name="billingContactName" value={formData.billingContactName} onChange={handleTextChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Billing Contact Number</label><input name="billingContactNumber" type="tel" pattern="[0-9]{10}" value={formData.billingContactNumber} onChange={handleTextChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Billing Email ID</label><input name="billingContactEmail" type="email" value={formData.billingContactEmail} onChange={handleTextChange} required className="form-control" /></div>
+                            <div className="form-group"><label>Billing Contact Name</label><input name="billingContactName" value={formData.billingContactName} onChange={handleTextChange} className="form-control" />{errors.billingContactName && <p className="error-message">{errors.billingContactName}</p>}</div>
+                            <div className="form-group"><label>Billing Contact Number</label><input name="billingContactNumber" type="tel" pattern="[0-9]{10}" value={formData.billingContactNumber} onChange={handleTextChange} className="form-control" />{errors.billingContactNumber && <p className="error-message">{errors.billingContactNumber}</p>}</div>
+                            <div className="form-group"><label>Billing Email ID</label><input name="billingContactEmail" type="email" value={formData.billingContactEmail} onChange={handleTextChange} className="form-control" />{errors.billingContactEmail && <p className="error-message">{errors.billingContactEmail}</p>}</div>
                         </div>
                     </>
                 );
@@ -152,14 +192,14 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <>
                         <h3>Mandatory Documents</h3>
                         <div className="document-upload-grid">
-                            <div className="form-group"><label>Organisation Type</label><select name="organisationType" value={formData.organisationType} onChange={handleTextChange} required className="form-control"><option>Pvt Ltd</option><option>LLP</option><option>Partnership</option><option>Proprietorship</option></select></div>
-                            <div className="form-group"><label>Certificate of Incorporation</label><input name="certificateOfIncorporation" type="file" onChange={handleFileChange} required className="form-control" /></div>
-                            <div className="form-group"><label>GST Certificate</label><input name="gstCertificate" type="file" onChange={handleFileChange} required className="form-control" /></div>
-                            <div className="form-group"><label>PAN Card</label><input name="panCard" type="file" onChange={handleFileChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Lease Agreement / Office Ownership Proof</label><input name="officeProof" type="file" onChange={handleFileChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Utility Bill Type</label><select name="utilityBillType" value={formData.utilityBillType} onChange={handleTextChange} required className="form-control"><option>Electricity Bill</option><option>Telephone Bill</option></select></div>
-                            <div className="form-group"><label>Utility Bill Document</label><input name="utilityBill" type="file" onChange={handleFileChange} required className="form-control" /></div>
-                            <div className="form-group"><label>Authorised Signatory Letter</label><input name="signatoryLetter" type="file" onChange={handleFileChange} required className="form-control" /></div>
+                            <div className="form-group"><label>Organisation Type</label><select name="organisationType" value={formData.organisationType} onChange={handleTextChange} className="form-control"><option>Pvt Ltd</option><option>LLP</option><option>Partnership</option><option>Proprietorship</option></select></div>
+                            <div className="form-group"><label>Certificate of Incorporation</label><input name="certificateOfIncorporation" type="file" onChange={handleFileChange} className="form-control" />{errors.certificateOfIncorporation && <p className="error-message">{errors.certificateOfIncorporation}</p>}</div>
+                            <div className="form-group"><label>GST Certificate</label><input name="gstCertificate" type="file" onChange={handleFileChange} className="form-control" />{errors.gstCertificate && <p className="error-message">{errors.gstCertificate}</p>}</div>
+                            <div className="form-group"><label>PAN Card</label><input name="panCard" type="file" onChange={handleFileChange} className="form-control" />{errors.panCard && <p className="error-message">{errors.panCard}</p>}</div>
+                            <div className="form-group"><label>Lease Agreement / Office Ownership Proof</label><input name="officeProof" type="file" onChange={handleFileChange} className="form-control" />{errors.officeProof && <p className="error-message">{errors.officeProof}</p>}</div>
+                            <div className="form-group"><label>Utility Bill Type</label><select name="utilityBillType" value={formData.utilityBillType} onChange={handleTextChange} className="form-control"><option>Electricity Bill</option><option>Telephone Bill</option></select></div>
+                            <div className="form-group"><label>Utility Bill Document</label><input name="utilityBill" type="file" onChange={handleFileChange} className="form-control" />{errors.utilityBill && <p className="error-message">{errors.utilityBill}</p>}</div>
+                            <div className="form-group"><label>Authorised Signatory Letter</label><input name="signatoryLetter" type="file" onChange={handleFileChange} className="form-control" />{errors.signatoryLetter && <p className="error-message">{errors.signatoryLetter}</p>}</div>
                             <div className="form-group"><label>Board Resolution (Optional)</label><input name="boardResolution" type="file" onChange={handleFileChange} className="form-control" /></div>
                         </div>
                     </>
@@ -205,7 +245,7 @@ const MultiStepForm = ({ onClientAdded }) => {
                 return null;
         }
     };
-
+    
     return (
         <form onSubmit={handleSubmit}>
             <div className="multi-step-form-progress">
@@ -229,7 +269,7 @@ const MultiStepForm = ({ onClientAdded }) => {
             </div>
 
             {message && <div className="message success" style={{color: 'green', marginTop: '20px'}}>{message}</div>}
-            {error && <div className="message error" style={{color: 'red', marginTop: '20px'}}>{error}</div>}
+            {Object.keys(errors).length > 0 && <div className="message error" style={{color: 'red', marginTop: '20px'}}>Please correct the errors before proceeding.</div>}
             
             {pdfPreview && <PdfViewerModal file={pdfPreview} onClose={() => setPdfPreview(null)} />}
         </form>
