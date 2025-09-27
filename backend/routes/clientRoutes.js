@@ -7,6 +7,7 @@ const {
     updateClient,
     deleteClient,
     updateClientStatus,
+    getClientDocuments
 } = require('../controllers/clientController');
 const upload = require('../config/cloudinary');
 const { protect, adminOnly, mfaEnabled } = require('../middleware/authMiddleware');
