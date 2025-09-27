@@ -78,14 +78,16 @@ const create = async (clientData, documents) => {
 const findAll = async () => {
     const query = `
         SELECT 
-            id,
-            customer_id, -- <-- Added this line
-            full_name,
-            email,
-            status,
-            created_at
-        FROM clients 
-        ORDER BY created_at DESC
+            c.id,
+            c.customer_id,
+            c.full_name,
+            c.email,
+            c.status,
+            c.created_at,
+            am.name as account_manager_name
+        FROM clients c
+        LEFT JOIN account_managers am ON c.account_manager_id = am.id
+        ORDER BY c.created_at DESC
     `;
     const { rows } = await pool.query(query);
     return rows;
