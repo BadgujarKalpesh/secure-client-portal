@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import api from '../../api/axiosConfig';
+import { useAuth } from '../../context/AuthContext'; // <-- Import useAuth
 
 const MfaSetup = ({ setupUrl, enableUrl, userType }) => {
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [mfaToken, setMfaToken] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
+    const { updateUserMfaStatus } = useAuth(); // <-- Get the update function
 
     const handleSetup = async () => {
         setError('');
         setMessage('');
         try {
-            const response = await api.get(setupUrl); // Use prop
+            const response = await api.get(setupUrl);
             setQrCodeUrl(response.data.qrCodeUrl);
         } catch {
             setError('Could not start MFA setup.');
@@ -22,8 +24,9 @@ const MfaSetup = ({ setupUrl, enableUrl, userType }) => {
         setError('');
         setMessage('');
         try {
-            const response = await api.post(enableUrl, { mfaToken }); // Use prop
+            const response = await api.post(enableUrl, { mfaToken });
             setMessage(response.data.message);
+            updateUserMfaStatus(true); // <-- UPDATE THE CONTEXT
             setQrCodeUrl(''); 
         } catch (err) {
             setError(err.response?.data?.message || 'Verification failed.');

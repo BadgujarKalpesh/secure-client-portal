@@ -57,7 +57,11 @@ const loginUser = async (req, res) => {
         res.status(200).json({
             message: 'Login successful',
             token: generateToken(user.id, user.username, role),
-            user: { username: user.username, role: role }
+            user: { 
+                username: user.username, 
+                role: role,
+                is_mfa_enabled: user.is_mfa_enabled // <-- ADD THIS LINE
+            }
         });
 
     } catch (error) {
@@ -65,7 +69,6 @@ const loginUser = async (req, res) => {
         res.status(500).json({ message: 'Server error during login.' });
     }
 };
-
 const setupAdminMfa = async (req, res) => {
     try {
         // CHANGED: Use req.user instead of req.admin

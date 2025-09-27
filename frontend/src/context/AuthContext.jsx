@@ -20,19 +20,21 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (token, userData) => {
+        // The userData from the login response now includes is_mfa_enabled
         setToken(token);
         setUser(userData);
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-
-        // Fetch user details to get MFA status
-        api.get('/auth/user').then(response => {
-            setUser(prevUser => ({ ...prevUser, is_mfa_enabled: response.data.is_mfa_enabled }));
-            localStorage.setItem('user', JSON.stringify({ ...userData, is_mfa_enabled: response.data.is_mfa_enabled }));
-        });
-
         navigate('/dashboard');
+    };
+    
+    const updateUserMfaStatus = (isMfaEnabled) => {
+        setUser(currentUser => {
+            const updatedUser = { ...currentUser, is_mfa_enabled: isMfaEnabled };
+            localStorage.setItem('user', JSON.stringify(updatedUser));
+            return updatedUser;
+        });
     };
 
     const logout = () => {
@@ -45,7 +47,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout }}>
+        <AuthContext.Provider value={{ user, token, login, logout, updateUserMfaStatus }}>
             {children}
         </AuthContext.Provider>
     );
