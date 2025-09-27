@@ -15,6 +15,7 @@ const Sidebar = () => {
     const { user, logout } = useAuth();
     const isAdmin = user?.role === 'admin';
     const isSuperAdmin = user?.role === 'superAdmin';
+    const isMfaEnabled = user?.is_mfa_enabled;
 
     return (
         <aside className="sidebar">
@@ -37,7 +38,11 @@ const Sidebar = () => {
                     )}
                     
                     {isAdmin && (
-                        <li><NavLink to="/clients/create"><CreateIcon /> Create Client</NavLink></li>
+                        <li>
+                            <NavLink to="/clients/create" className={!isMfaEnabled ? 'disabled-link' : ''}>
+                                <CreateIcon /> Create Client
+                            </NavLink>
+                        </li>
                     )}
                     
                     {isSuperAdmin ? (

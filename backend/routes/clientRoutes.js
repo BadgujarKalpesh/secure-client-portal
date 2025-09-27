@@ -35,4 +35,6 @@ router.route('/:id')
 
 router.put('/:id/status', updateClientStatus);
 
+router.get('/:id/documents', getClientDocuments); 
+
 module.exports = router;

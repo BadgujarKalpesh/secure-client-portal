@@ -172,6 +172,12 @@ const remove = async (id) => {
     await pool.query('DELETE FROM clients WHERE id = $1', [id]);
 };
 
+const findDocsById = async (id) => {
+    const query = 'SELECT * FROM documents WHERE client_id = $1';
+    const { rows } = await pool.query(query, [id]);
+    return rows;
+};
+
 
 module.exports = {
     create,
@@ -179,5 +185,6 @@ module.exports = {
     findById,
     update,
     updateStatus,
-    remove
+    remove,
+    findDocsById,
 };

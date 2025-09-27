@@ -97,6 +97,16 @@ const deleteClient = async (req, res) => {
      res.status(501).json({ message: 'Client delete not yet implemented.'});
 }
 
+const getClientDocuments = async (req, res) => {
+    try {
+        const documents = await Client.findDocsById(req.params.id);
+        res.status(200).json(documents);
+    } catch (error) {
+        console.error(`Error fetching documents for client ${req.params.id}:`, error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
 module.exports = {
     createClient,
     getAllClients,
@@ -104,4 +114,5 @@ module.exports = {
     updateClient,
     deleteClient,
     updateClientStatus,
+    getClientDocuments
 };

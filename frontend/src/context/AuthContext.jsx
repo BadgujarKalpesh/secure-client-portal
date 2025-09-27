@@ -5,7 +5,6 @@ import api from '../api/axiosConfig';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-    // The user state will now hold the full user object including the role
     const [user, setUser] = useState(null);
     const [token, setToken] = useState(() => localStorage.getItem('token'));
     const navigate = useNavigate();
@@ -26,6 +25,13 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        // Fetch user details to get MFA status
+        api.get('/auth/user').then(response => {
+            setUser(prevUser => ({ ...prevUser, is_mfa_enabled: response.data.is_mfa_enabled }));
+            localStorage.setItem('user', JSON.stringify({ ...userData, is_mfa_enabled: response.data.is_mfa_enabled }));
+        });
+
         navigate('/dashboard');
     };
 

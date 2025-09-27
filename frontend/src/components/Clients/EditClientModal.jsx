@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
 import { useAuth } from '../../context/AuthContext';
 
@@ -7,8 +7,21 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
     const isAdmin = user?.role === 'admin';
     
     const [formData, setFormData] = useState({ ...client });
+    const [documents, setDocuments] = useState([]);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+
+    useEffect(() => {
+        const fetchDocuments = async () => {
+            try {
+                const response = await api.get(`/clients/${client.id}/documents`);
+                setDocuments(response.data);
+            } catch (err) {
+                console.error("Failed to fetch documents:", err);
+            }
+        };
+        fetchDocuments();
+    }, [client.id]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -70,6 +83,20 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                             <div className="form-group"><label>Billing Contact Name</label><input name="billing_contact_name" value={formData.billing_contact_name || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
                             <div className="form-group"><label>Billing Contact Number</label><input name="billing_contact_number" value={formData.billing_contact_number || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
                             <div className="form-group"><label>Billing Email ID</label><input name="billing_contact_email" value={formData.billing_contact_email || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
+                        </div>
+
+                         <h4 className="form-section-header">Documents</h4>
+                        <div className="preview-section" style={{ gridColumn: '1 / -1' }}>
+                            {documents.length > 0 ? (
+                                documents.map(doc => (
+                                    <div key={doc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                        <span>{doc.document_type.replace(/([A-Z])/g, ' $1').trim()}: {doc.document_unique_id}</span>
+                                        <a href={doc.url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">View PDF</a>
+                                    </div>
+                                ))
+                            ) : (
+                                <p>No documents found for this client.</p>
+                            )}
                         </div>
 
                         {error && <div className="message error" style={{ color: 'red', marginTop: '15px' }}>{error}</div>}

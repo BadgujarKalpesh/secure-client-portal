@@ -643,3 +643,9 @@ body {
     display: flex;
     gap: 10px;
 }
+
+.disabled-link {
+    color: #aaa;
+    pointer-events: none;
+    cursor: not-allowed;
+}
