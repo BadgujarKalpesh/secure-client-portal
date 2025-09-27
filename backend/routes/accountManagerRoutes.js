@@ -5,15 +5,14 @@ const {
     getAllAccountManagers,
     updateAccountManager,
 } = require('../controllers/accountManagerController');
-const { protect, superAdminOnly } = require('../middleware/authMiddleware');
+const { protect, superAdminOnly, adminOrSuperAdmin } = require('../middleware/authMiddleware');
 
-router.use(protect, superAdminOnly);
-
+// Use specific middleware for each route
 router.route('/')
-    .post(createAccountManager)
-    .get(getAllAccountManagers);
+    .post(protect, superAdminOnly, createAccountManager)
+    .get(protect, adminOrSuperAdmin, getAllAccountManagers); // <-- Admins and Super Admins can get the list
 
 router.route('/:id')
-    .put(updateAccountManager);
+    .put(protect, superAdminOnly, updateAccountManager);
 
 module.exports = router;

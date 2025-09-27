@@ -1,4 +1,4 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
 
 const PdfViewerModal = ({ file, onClose }) => {
@@ -19,7 +19,7 @@ const PdfViewerModal = ({ file, onClose }) => {
     );
 };
 
-const MultiStepForm = () => {
+const MultiStepForm = ({ onClientAdded }) => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
         organisationName: '',
@@ -91,7 +91,6 @@ const MultiStepForm = () => {
     
     const validateStep = () => {
         let newErrors = {};
-        // Email and Phone validation regex
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phoneRegex = /^[0-9]{10}$/;
 
@@ -101,21 +100,18 @@ const MultiStepForm = () => {
             if (!formData.organisationDomainId) newErrors.organisationDomainId = "Organisation Domain ID is required.";
             if (!formData.natureOfBusiness) newErrors.natureOfBusiness = "Nature of Business is required.";
         } else if (step === 2) {
-            
-            if (!emailRegex.test(formData.authorisedSignatoryEmail)) {
-                newErrors.authorisedSignatoryEmail = "Please enter a valid email address.";
-            }
-            if (!phoneRegex.test(formData.authorisedSignatoryMobile)) {
-                newErrors.authorisedSignatoryMobile = "Please enter a valid 10-digit contact number.";
-            }
             if (!formData.authorisedSignatoryFullName) newErrors.authorisedSignatoryFullName = "Full Name is required.";
-            // if (!formData.authorisedSignatoryMobile) newErrors.authorisedSignatoryMobile = "Mobile Number is required.";
-            // if (!formData.authorisedSignatoryEmail) newErrors.authorisedSignatoryEmail = "Email ID is required.";
+            if (!formData.authorisedSignatoryMobile) newErrors.authorisedSignatoryMobile = "Mobile Number is required.";
+            else if (!phoneRegex.test(formData.authorisedSignatoryMobile)) newErrors.authorisedSignatoryMobile = "Please enter a valid 10-digit number.";
+            if (!formData.authorisedSignatoryEmail) newErrors.authorisedSignatoryEmail = "Email ID is required.";
+            else if(!emailRegex.test(formData.authorisedSignatoryEmail)) newErrors.authorisedSignatoryEmail = "Please enter a valid email address.";
             if (!formData.authorisedSignatoryDesignation) newErrors.authorisedSignatoryDesignation = "Designation is required.";
         } else if (step === 3) {
             if (!formData.billingContactName) newErrors.billingContactName = "Billing Contact Name is required.";
             if (!formData.billingContactNumber) newErrors.billingContactNumber = "Billing Contact Number is required.";
+             else if (!phoneRegex.test(formData.billingContactNumber)) newErrors.billingContactNumber = "Please enter a valid 10-digit number.";
             if (!formData.billingContactEmail) newErrors.billingContactEmail = "Billing Email ID is required.";
+            else if(!emailRegex.test(formData.billingContactEmail)) newErrors.billingContactEmail = "Please enter a valid email address.";
         } else if (step === 4) {
             const requiredDocs = ['certificateOfIncorporation', 'gstCertificate', 'panCard', 'officeProof', 'utilityBill', 'signatoryLetter'];
             requiredDocs.forEach(doc => {
@@ -131,6 +127,7 @@ const MultiStepForm = () => {
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
+
 
     const nextStep = () => {
         if (validateStep()) {
@@ -164,10 +161,11 @@ const MultiStepForm = () => {
             setMessage('Client created successfully!');
             setTimeout(() => {
                 setStep(1);
-                setFormData({ organisationName: '', organisationAddress: '', organisationDomainId: '', natureOfBusiness: '', authorisedSignatoryFullName: '', authorisedSignatoryMobile: '', authorisedSignatoryEmail: '', authorisedSignatoryDesignation: '', billingContactName: '', billingContactNumber: '', billingContactEmail: '', organisationType: 'Pvt Ltd', utilityBillType: 'Electricity Bill' });
+                setFormData({ organisationName: '', organisationAddress: '', organisationDomainId: '', natureOfBusiness: '', authorisedSignatoryFullName: '', authorisedSignatoryMobile: '', authorisedSignatoryEmail: '', authorisedSignatoryDesignation: '', billingContactName: '', billingContactNumber: '', billingContactEmail: '', organisationType: 'Pvt Ltd', utilityBillType: 'Electricity Bill', accountManagerId: '' });
                 setFiles({});
                 setDocumentIds({});
                 setMessage('');
+                if(onClientAdded) onClientAdded();
             }, 2000);
         } catch (err) {
             setErrors(err.response?.data?.message || 'Error creating client.');
@@ -175,7 +173,6 @@ const MultiStepForm = () => {
             setIsLoading(false);
         }
     };
-
     const renderStep = () => {
         switch (step) {
             case 1:
@@ -223,7 +220,7 @@ const MultiStepForm = () => {
                         <h3 className="form-step-heading">Section B – Authorised Signatory</h3>
                         <div className="form-grid">
                             <div className="form-group"><label>Full Name</label><input name="authorisedSignatoryFullName" value={formData.authorisedSignatoryFullName} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryFullName && <p className="error-message">{errors.authorisedSignatoryFullName}</p>}</div>
-                            <div className="form-group"><label>Mobile Number</label><input name="authorisedSignatoryMobile" type="tel" pattern="[0-9]{10}" value={formData.authorisedSignatoryMobile} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryMobile && <p className="error-message">{errors.authorisedSignatoryMobile}</p>}</div>
+                            <div className="form-group"><label>Mobile Number</label><input name="authorisedSignatoryMobile" type="tel" value={formData.authorisedSignatoryMobile} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryMobile && <p className="error-message">{errors.authorisedSignatoryMobile}</p>}</div>
                             <div className="form-group"><label>Email ID</label><input name="authorisedSignatoryEmail" type="email" value={formData.authorisedSignatoryEmail} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryEmail && <p className="error-message">{errors.authorisedSignatoryEmail}</p>}</div>
                             <div className="form-group"><label>Designation</label><input name="authorisedSignatoryDesignation" value={formData.authorisedSignatoryDesignation} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryDesignation && <p className="error-message">{errors.authorisedSignatoryDesignation}</p>}</div>
                         </div>
@@ -235,7 +232,7 @@ const MultiStepForm = () => {
                         <h3 className="form-step-heading">Section C – Billing Contact</h3>
                         <div className="form-grid">
                             <div className="form-group"><label>Billing Contact Name</label><input name="billingContactName" value={formData.billingContactName} onChange={handleTextChange} className="form-control" />{errors.billingContactName && <p className="error-message">{errors.billingContactName}</p>}</div>
-                            <div className="form-group"><label>Billing Contact Number</label><input name="billingContactNumber" type="tel" pattern="[0-9]{10}" value={formData.billingContactNumber} onChange={handleTextChange} className="form-control" />{errors.billingContactNumber && <p className="error-message">{errors.billingContactNumber}</p>}</div>
+                            <div className="form-group"><label>Billing Contact Number</label><input name="billingContactNumber" type="tel" value={formData.billingContactNumber} onChange={handleTextChange} className="form-control" />{errors.billingContactNumber && <p className="error-message">{errors.billingContactNumber}</p>}</div>
                             <div className="form-group"><label>Billing Email ID</label><input name="billingContactEmail" type="email" value={formData.billingContactEmail} onChange={handleTextChange} className="form-control" />{errors.billingContactEmail && <p className="error-message">{errors.billingContactEmail}</p>}</div>
                         </div>
                     </>
@@ -306,7 +303,7 @@ const MultiStepForm = () => {
                                     <input name="boardResolution" type="file" onChange={handleFileChange} className="form-control" />
                                 </div>
                             </div>
-                            <div className="form-group">
+                             <div className="form-group">
                                 <label>Assign Account Manager</label>
                                 <select name="accountManagerId" value={formData.accountManagerId} onChange={handleTextChange} className="form-control">
                                     <option value="">Select an Account Manager</option>

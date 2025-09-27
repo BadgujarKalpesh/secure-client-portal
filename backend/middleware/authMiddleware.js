@@ -33,14 +33,6 @@ const protect = async (req, res, next) => {
     }
 };
 
-const superAdminOnly = (req, res, next) => {
-    if (req.user && req.user.role === 'superAdmin') {
-        next();
-    } else {
-        res.status(403).json({ message: 'Not authorized as a super admin' });
-    }
-};
-
 const adminOnly = (req, res, next) => {
     if (req.user && req.user.role === 'admin') {
         next();
@@ -49,26 +41,33 @@ const adminOnly = (req, res, next) => {
     }
 };
 
-// ** NEW MIDDLEWARE TO CHECK IF MFA IS ENABLED **
-const mfaEnabled = (req, res, next) => {
-    // Check if the user object exists and if MFA is enabled
-    if (req.user && req.user.is_mfa_enabled) {
-        req.mfaEnabled = true;
+const superAdminOnly = (req, res, next) => {
+    if (req.user && req.user.role === 'superAdmin') {
         next();
     } else {
-        // If MFA is not enabled, deny access
-        req.mfaEnabled = false;
+        res.status(403).json({ message: 'Not authorized as a super admin' });
+    }
+};
+
+// NEW MIDDLEWARE FOR ADMIN AND SUPER ADMIN ACCESS
+const adminOrSuperAdmin = (req, res, next) => {
+    if (req.user && (req.user.role === 'admin' || req.user.role === 'superAdmin')) {
+        next();
+    } else {
+        res.status(403).json({ message: 'Not authorized for this action' });
+    }
+};
+
+const mfaEnabled = (req, res, next) => {
+    if (req.user && req.user.is_mfa_enabled) {
+        next();
+    } else {
         res.status(403).json({ 
             message: 'MFA is not enabled. Please complete MFA setup to access this feature.',
-            mfaRequired: false, // Indicates setup is needed, not just verification
+            mfaRequired: false,
             mfaEnabled: false
         });
     }
 };
 
-module.exports = { 
-    protect, 
-    adminOnly, 
-    mfaEnabled,
-    superAdminOnly
- };
+module.exports = { protect, adminOnly, superAdminOnly, adminOrSuperAdmin, mfaEnabled };
