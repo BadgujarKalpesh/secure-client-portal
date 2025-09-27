@@ -10,53 +10,49 @@ const SettingsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" he
 const UserIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>;
 const AccountManagerIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"></circle><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path></svg>;
 
-
 const Sidebar = () => {
     const { user, logout } = useAuth();
     const isAdmin = user?.role === 'admin';
     const isSuperAdmin = user?.role === 'superAdmin';
     const isMfaEnabled = user?.is_mfa_enabled;
 
-    if (!isMfaEnabled) {
-        return (
-            <aside className="sidebar">
-                <div className="sidebar-header">MFA Required</div>
-                <div style={{ padding: '20px', textAlign: 'center' }}>
-                    <p>Please enable MFA to access the portal features.</p>
-                </div>
-            </aside>
-        );
-    }
-
     return (
         <aside className="sidebar">
             <div className="sidebar-header">
                 {isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Client Portal')}
             </div>
-            <nav className="sidebar-nav">
-                <ul>
-                    <li><NavLink to="/dashboard"><DashboardIcon /> Dashboard</NavLink></li>
-                    {!isSuperAdmin && (
-                        <li><NavLink to="/clients" end><ClientsIcon /> Show Clients</NavLink></li>
-                    )}
-                    {isSuperAdmin && (
-                        <>
-                            <li><NavLink to="/manage-users"><UserIcon /> Manage Users</NavLink></li>
-                            <li><NavLink to="/account-managers"><AccountManagerIcon /> Account Managers</NavLink></li>
-                        </>
-                    )}
-                    {isAdmin && (
-                        <li><NavLink to="/clients/create"><CreateIcon /> Create Client</NavLink></li>
-                    )}
-                    {isSuperAdmin ? (
-                         <li><NavLink to="/settings/superadmin-mfa"><SettingsIcon /> Settings</NavLink></li>
-                    ) : isAdmin ? (
-                        <li><NavLink to="/settings/mfa"><SettingsIcon /> Settings</NavLink></li>
-                    ) : (
-                        <li><NavLink to="/settings/viewer-mfa"><SettingsIcon /> MFA Setup</NavLink></li>
-                    )}
-                </ul>
-           </nav>
+            
+            {isMfaEnabled ? (
+                <nav className="sidebar-nav">
+                    <ul>
+                        <li><NavLink to="/dashboard"><DashboardIcon /> Dashboard</NavLink></li>
+                        {!isSuperAdmin && (
+                            <li><NavLink to="/clients" end><ClientsIcon /> Show Clients</NavLink></li>
+                        )}
+                        {isSuperAdmin && (
+                            <>
+                                <li><NavLink to="/manage-users"><UserIcon /> Manage Users</NavLink></li>
+                                <li><NavLink to="/account-managers"><AccountManagerIcon /> Account Managers</NavLink></li>
+                            </>
+                        )}
+                        {isAdmin && (
+                            <li><NavLink to="/clients/create"><CreateIcon /> Create Client</NavLink></li>
+                        )}
+                        {isSuperAdmin ? (
+                            <li><NavLink to="/settings/superadmin-mfa"><SettingsIcon /> Settings</NavLink></li>
+                        ) : isAdmin ? (
+                            <li><NavLink to="/settings/mfa"><SettingsIcon /> Settings</NavLink></li>
+                        ) : (
+                            <li><NavLink to="/settings/viewer-mfa"><SettingsIcon /> MFA Setup</NavLink></li>
+                        )}
+                    </ul>
+                </nav>
+            ) : (
+                <div style={{ padding: '20px', textAlign: 'center', flexGrow: 1 }}>
+                    <p>Please enable MFA in Settings to access portal features.</p>
+                </div>
+            )}
+            
             <div className="sidebar-footer">
                 <div className="user-info">Welcome, {user?.username || 'User'}!</div>
                 <button onClick={logout} className="btn btn-secondary">Logout</button>
