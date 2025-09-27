@@ -12,6 +12,7 @@ const ClientsList = ({ clients, onEditClick }) => {
                 <table className="client-table">
                     <thead>
                         <tr>
+                            <th>Customer ID</th> {/* <-- ADDED HEADER */}
                             <th>Full Name</th>
                             <th>Email</th>
                             <th>Status</th>
@@ -20,8 +21,8 @@ const ClientsList = ({ clients, onEditClick }) => {
                     </thead>
                     <tbody>
                         {clients.map((client) => (
-                            // Use client.id instead of client._id for the key
                             <tr key={client.id}>
+                                <td>{client.customer_id}</td> {/* <-- ADDED DATA CELL */}
                                 <td>{client.full_name}</td>
                                 <td>{client.email}</td>
                                 <td>

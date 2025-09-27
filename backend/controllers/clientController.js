@@ -3,21 +3,8 @@ const cloudinary = require('cloudinary').v2;
 
 const createClient = async (req, res) => {
     try {
-        // **FIX:** The keys in this object MUST be camelCase to match the model
-        const clientData = {
-            organisationName: req.body.organisationName,
-            organisationAddress: req.body.organisationAddress,
-            organisationDomainId: req.body.organisationDomainId,
-            natureOfBusiness: req.body.natureOfBusiness,
-            authorisedSignatoryFullName: req.body.authorisedSignatoryFullName,
-            authorisedSignatoryMobile: req.body.authorisedSignatoryMobile,
-            authorisedSignatoryEmail: req.body.authorisedSignatoryEmail,
-            authorisedSignatoryDesignation: req.body.authorisedSignatoryDesignation,
-            billingContactName: req.body.billingContactName,
-            billingContactNumber: req.body.billingContactNumber,
-            billingContactEmail: req.body.billingContactEmail,
-            organisationType: req.body.organisationType
-        };
+        const clientData = req.body;
+        const documentIds = JSON.parse(req.body.documentIds || '{}');
 
         let documents = [];
         if (req.files) {
@@ -25,11 +12,11 @@ const createClient = async (req, res) => {
                 const fileArray = req.files[fieldName];
                 if (fileArray && fileArray.length > 0) {
                     const file = fileArray[0];
-                    console.log("fieldName : ", fieldName);
                     documents.push({
                         document_type: fieldName,
                         url: file.path,
-                        public_id: file.filename
+                        public_id: file.filename,
+                        document_unique_id: documentIds[fieldName] // Get the ID from the parsed object
                     });
                 }
             }

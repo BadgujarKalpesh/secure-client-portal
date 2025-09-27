@@ -1,99 +1,85 @@
 const { pool } = require('../config/db');
 
-// Creates a new client in the database
 const create = async (clientData, documents) => {
-    const {
-        organisationName,
-        organisationAddress,
-        organisationDomainId,
-        natureOfBusiness,
-        authorisedSignatoryFullName,
-        authorisedSignatoryMobile,
-        authorisedSignatoryEmail,
-        authorisedSignatoryDesignation,
-        billingContactName,
-        billingContactNumber,
-        billingContactEmail,
-        organisationType
-    } = clientData;
+    // Start a transaction
+    const client = await pool.connect();
+    try {
+        await client.query('BEGIN');
 
-    const clientQuery = `
-        INSERT INTO clients (
-            -- Columns for easy access & to satisfy NOT NULL constraints
-            full_name,
-            email,
-            contact_number,
-            business_name,
-            address,
-
-            -- The rest of the detailed organisation and contact fields
-            organisation_name,
-            organisation_address,
-            organisation_domain_id,
-            nature_of_business,
-            authorised_signatory_full_name,
-            authorised_signatory_mobile,
-            authorised_signatory_email,
-            authorised_signatory_designation,
-            billing_contact_name,
-            billing_contact_number,
-            billing_contact_email,
-            organisation_type
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
-        RETURNING *;
-    `;
-
-    const clientValues = [
-        // Mapped main details to the required columns
-        authorisedSignatoryFullName,
-        authorisedSignatoryEmail,
-        authorisedSignatoryMobile,
-        organisationName,
-        organisationAddress,
-
-        // The rest of the detailed values
-        organisationName,
-        organisationAddress,
-        organisationDomainId,
-        natureOfBusiness,
-        authorisedSignatoryFullName,
-        authorisedSignatoryMobile,
-        authorisedSignatoryEmail,
-        authorisedSignatoryDesignation,
-        billingContactName,
-        billingContactNumber,
-        billingContactEmail,
-        organisationType
-    ];
-
-    const clientResult = await pool.query(clientQuery, clientValues);
-    const newClient = clientResult.rows[0];
-
-    // Document insertion logic remains the same
-    if (documents && documents.length > 0) {
-        const documentQuery = 'INSERT INTO documents (client_id, url, public_id, document_type) VALUES ($1, $2, $3, $4)';
-        for (const doc of documents) {
-            // Note: You might want to add a 'document_type' column to your documents table
-            // to distinguish between PAN, GST, etc. For now, this will work.
-            await pool.query(documentQuery, [newClient.id, doc.url, doc.public_id, doc.document_type]);
+        // 1. Generate the next customer_id
+        const lastIdRes = await client.query("SELECT customer_id FROM clients ORDER BY id DESC LIMIT 1");
+        let nextId = 1;
+        if (lastIdRes.rows.length > 0) {
+            nextId = parseInt(lastIdRes.rows[0].customer_id, 10) + 1;
         }
-    }
+        const customerId = String(nextId).padStart(6, '0');
 
-    return newClient;
+        // 2. Insert the new client with the generated customer_id
+        const {
+            organisationName,
+            organisationAddress,
+            organisationDomainId,
+            natureOfBusiness,
+            authorisedSignatoryFullName,
+            authorisedSignatoryMobile,
+            authorisedSignatoryEmail,
+            authorisedSignatoryDesignation,
+            billingContactName,
+            billingContactNumber,
+            billingContactEmail,
+            organisationType
+        } = clientData;
+
+        const clientQuery = `
+            INSERT INTO clients (
+                customer_id, full_name, email, contact_number, business_name, address,
+                organisation_name, organisation_address, organisation_domain_id,
+                nature_of_business, authorised_signatory_full_name,
+                authorised_signatory_mobile, authorised_signatory_email,
+                authorised_signatory_designation, billing_contact_name,
+                billing_contact_number, billing_contact_email, organisation_type
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
+            RETURNING *;
+        `;
+        const clientValues = [
+            customerId, authorisedSignatoryFullName, authorisedSignatoryEmail,
+            authorisedSignatoryMobile, organisationName, organisationAddress,
+            organisationName, organisationAddress, organisationDomainId,
+            natureOfBusiness, authorisedSignatoryFullName,
+            authorisedSignatoryMobile, authorisedSignatoryEmail,
+            authorisedSignatoryDesignation, billingContactName,
+            billingContactNumber, billingContactEmail, organisationType
+        ];
+        
+        const clientResult = await client.query(clientQuery, clientValues);
+        const newClient = clientResult.rows[0];
+
+        // 3. Insert documents with their unique IDs
+        if (documents && documents.length > 0) {
+            const documentQuery = 'INSERT INTO documents (client_id, url, public_id, document_type, document_unique_id) VALUES ($1, $2, $3, $4, $5)';
+            for (const doc of documents) {
+                await client.query(documentQuery, [newClient.id, doc.url, doc.public_id, doc.document_type, doc.document_unique_id]);
+            }
+        }
+
+        await client.query('COMMIT');
+        return newClient;
+
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
 };
 
-
-// Fetches all clients
 const findAll = async () => {
-    // This query now directly selects the main fields your frontend list expects.
     const query = `
         SELECT 
             id,
+            customer_id, -- <-- Added this line
             full_name,
             email,
-            contact_number,
-            address,
-            business_name,
             status,
             created_at
         FROM clients 
