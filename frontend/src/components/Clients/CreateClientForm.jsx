@@ -1,24 +1,40 @@
 import React, { useState } from 'react';
 import api from '../../api/axiosConfig';
 
+const PdfViewerModal = ({ file, onClose }) => {
+    if (!file) return null;
+
+    const fileUrl = URL.createObjectURL(file);
+
+    return (
+        <div className="modal-backdrop" onClick={onClose}>
+            <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                    <h3>PDF Preview: {file.name}</h3>
+                    <button onClick={onClose} className="close-button">&times;</button>
+                </div>
+                <div className="modal-body" style={{ height: '70vh' }}>
+                    <iframe src={fileUrl} width="100%" height="100%" title={file.name} />
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const MultiStepForm = ({ onClientAdded }) => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
-        // Section A
         organisationName: '',
         organisationAddress: '',
         organisationDomainId: '',
         natureOfBusiness: '',
-        // Section B
         authorisedSignatoryFullName: '',
         authorisedSignatoryMobile: '',
         authorisedSignatoryEmail: '',
         authorisedSignatoryDesignation: '',
-        // Section C
         billingContactName: '',
         billingContactNumber: '',
         billingContactEmail: '',
-        // Documents
         organisationType: 'Pvt Ltd',
         utilityBillType: 'Electricity Bill',
     });
@@ -26,6 +42,7 @@ const MultiStepForm = ({ onClientAdded }) => {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [pdfPreview, setPdfPreview] = useState(null);
 
     const handleTextChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -35,15 +52,30 @@ const MultiStepForm = ({ onClientAdded }) => {
         setFiles({ ...files, [e.target.name]: e.target.files[0] });
     };
 
-    const nextStep = () => setStep(step + 1);
+    const nextStep = () => {
+        // Form validation before proceeding to the next step
+        const currentFields = Object.keys(formData).filter(key => {
+            if (step === 1) return ['organisationName', 'organisationAddress', 'organisationDomainId', 'natureOfBusiness'].includes(key);
+            if (step === 2) return ['authorisedSignatoryFullName', 'authorisedSignatoryMobile', 'authorisedSignatoryEmail', 'authorisedSignatoryDesignation'].includes(key);
+            if (step === 3) return ['billingContactName', 'billingContactNumber', 'billingContactEmail'].includes(key);
+            return false;
+        });
+
+        const isStepValid = currentFields.every(field => formData[field].trim() !== '');
+        
+        if (!isStepValid) {
+            setError('Please fill out all mandatory fields.');
+            return;
+        }
+
+        setError('');
+        setStep(step + 1);
+    };
+    
     const prevStep = () => setStep(step - 1);
 
     const handleViewPdf = (fileName) => {
-        const file = files[fileName];
-        if (file) {
-            const url = URL.createObjectURL(file);
-            window.open(url, '_blank');
-        }
+        setPdfPreview(files[fileName]);
     };
 
     const handleSubmit = async (e) => {
@@ -63,20 +95,15 @@ const MultiStepForm = ({ onClientAdded }) => {
         }
 
         try {
-            const response = await api.post('/clients', data);
-            if (onClientAdded) {
-                onClientAdded(response.data);
-            }
+            await api.post('/clients', data);
             setMessage('Client created successfully!');
             setTimeout(() => {
                 setStep(1);
                 setFormData({ organisationName: '', organisationAddress: '', organisationDomainId: '', natureOfBusiness: '', authorisedSignatoryFullName: '', authorisedSignatoryMobile: '', authorisedSignatoryEmail: '', authorisedSignatoryDesignation: '', billingContactName: '', billingContactNumber: '', billingContactEmail: '', organisationType: 'Pvt Ltd', utilityBillType: 'Electricity Bill' });
                 setFiles({});
                 setMessage('');
-                e.target.reset(); // This might not work as expected, manual reset is better.
             }, 2000);
         } catch (err) {
-            console.error('Error creating client:', err);
             setError(err.response?.data?.message || 'Error creating client.');
         } finally {
             setIsLoading(false);
@@ -142,7 +169,6 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <>
                         <h3>Preview Details</h3>
                         <div className="preview-grid">
-                            {/* Organisation Details */}
                             <div className="preview-section">
                                 <h4>Organisation Details</h4>
                                 <p><strong>Name:</strong> {formData.organisationName}</p>
@@ -150,7 +176,6 @@ const MultiStepForm = ({ onClientAdded }) => {
                                 <p><strong>Domain ID:</strong> {formData.organisationDomainId}</p>
                                 <p><strong>Nature of Business:</strong> {formData.natureOfBusiness}</p>
                             </div>
-                            {/* Signatory Details */}
                             <div className="preview-section">
                                 <h4>Authorised Signatory</h4>
                                 <p><strong>Full Name:</strong> {formData.authorisedSignatoryFullName}</p>
@@ -158,14 +183,12 @@ const MultiStepForm = ({ onClientAdded }) => {
                                 <p><strong>Email:</strong> {formData.authorisedSignatoryEmail}</p>
                                 <p><strong>Designation:</strong> {formData.authorisedSignatoryDesignation}</p>
                             </div>
-                            {/* Billing Details */}
                             <div className="preview-section">
                                 <h4>Billing Contact</h4>
                                 <p><strong>Name:</strong> {formData.billingContactName}</p>
                                 <p><strong>Number:</strong> {formData.billingContactNumber}</p>
                                 <p><strong>Email:</strong> {formData.billingContactEmail}</p>
                             </div>
-                            {/* Documents */}
                             <div className="preview-section">
                                 <h4>Documents</h4>
                                 {Object.entries(files).map(([key, file]) => (
@@ -207,6 +230,8 @@ const MultiStepForm = ({ onClientAdded }) => {
 
             {message && <div className="message success" style={{color: 'green', marginTop: '20px'}}>{message}</div>}
             {error && <div className="message error" style={{color: 'red', marginTop: '20px'}}>{error}</div>}
+            
+            {pdfPreview && <PdfViewerModal file={pdfPreview} onClose={() => setPdfPreview(null)} />}
         </form>
     );
 };
