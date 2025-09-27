@@ -269,7 +269,7 @@ const MultiStepForm = ({ onClientAdded }) => {
             </div>
 
             {message && <div className="message success" style={{color: 'green', marginTop: '20px'}}>{message}</div>}
-            {Object.keys(errors).length > 0 && <div className="message error" style={{color: 'red', marginTop: '20px'}}>Please correct the errors before proceeding.</div>}
+            {Object.keys(errors).length > 0 && <div className="message error" style={{color: 'red', marginTop: '20px'}}>Please Complete all fields before proceeding.</div>}
             
             {pdfPreview && <PdfViewerModal file={pdfPreview} onClose={() => setPdfPreview(null)} />}
         </form>
