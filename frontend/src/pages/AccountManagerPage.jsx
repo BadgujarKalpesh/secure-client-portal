@@ -79,7 +79,28 @@ const AccountManagerPage = () => {
             <div className="card" style={{marginTop: '20px'}}>
                 <h3>Existing Account Managers</h3>
                 <table className="client-table">
-                    {/* ... (table structure) */}
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Contact Number</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {currentItems.map(manager => (
+                            <tr key={manager.id}>
+                                <td>{manager.name}</td>
+                                <td>{manager.email}</td>
+                                <td>{manager.contact_number}</td>
+                                <td>
+                                    <button onClick={() => handleEditClick(manager)} title="Edit Manager">
+                                        <EditIcon />
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
                 </table>
                 <Pagination itemsPerPage={itemsPerPage} totalItems={accountManagers.length} paginate={paginate} />
             </div>
