@@ -12,9 +12,9 @@ const createClient = async (req, res) => {
                 const fileArray = req.files[fieldName];
                 if (fileArray && fileArray.length > 0) {
                     const file = fileArray[0];
-                    const uniqueId = documentIds[fieldName + 'Id']; // Correctly map the ID
+                    const uniqueId = documentIds[fieldName + 'Id'];
 
-                    if (!uniqueId && fieldName !== 'boardResolution') { // Board Resolution is optional
+                    if (!uniqueId && fieldName !== 'boardResolution') {
                         return res.status(400).json({ message: `Document ID for ${fieldName} is required.` });
                     }
 
@@ -22,7 +22,7 @@ const createClient = async (req, res) => {
                         document_type: fieldName,
                         url: file.path,
                         public_id: file.filename,
-                        document_unique_id: uniqueId || 'N/A' // Provide a default for optional fields
+                        document_unique_id: uniqueId || 'N/A'
                     });
                 }
             }

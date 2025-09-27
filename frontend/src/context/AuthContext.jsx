@@ -20,13 +20,20 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = (token, userData) => {
-        // The userData from the login response now includes is_mfa_enabled
         setToken(token);
         setUser(userData);
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
         api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        navigate('/dashboard');
+
+        if (!userData.is_mfa_enabled) {
+            const role = userData.role;
+            if (role === 'admin') navigate('/settings/mfa');
+            else if (role === 'viewer') navigate('/settings/viewer-mfa');
+            else if (role === 'superAdmin') navigate('/settings/superadmin-mfa');
+        } else {
+            navigate('/dashboard');
+        }
     };
     
     const updateUserMfaStatus = (isMfaEnabled) => {

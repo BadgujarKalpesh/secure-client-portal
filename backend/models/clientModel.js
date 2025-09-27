@@ -1,20 +1,20 @@
 const { pool } = require('../config/db');
 
 const create = async (clientData, documents) => {
-    // Start a transaction
     const client = await pool.connect();
     try {
         await client.query('BEGIN');
 
-        // 1. Generate the next customer_id
         const lastIdRes = await client.query("SELECT customer_id FROM clients ORDER BY id DESC LIMIT 1");
         let nextId = 1;
         if (lastIdRes.rows.length > 0 && lastIdRes.rows[0].customer_id) {
-            nextId = parseInt(lastIdRes.rows[0].customer_id, 10) + 1;
+            const parsedId = parseInt(lastIdRes.rows[0].customer_id, 10);
+            if (!isNaN(parsedId)) {
+                nextId = parsedId + 1;
+            }
         }
         const customerId = String(nextId).padStart(6, '0');
 
-        // 2. Insert the new client with the generated customer_id and account_manager_id
         const {
             organisationName,
             organisationAddress,
@@ -28,7 +28,7 @@ const create = async (clientData, documents) => {
             billingContactNumber,
             billingContactEmail,
             organisationType,
-            accountManagerId // <-- New field
+            accountManagerId
         } = clientData;
 
         const clientQuery = `
@@ -51,7 +51,7 @@ const create = async (clientData, documents) => {
             authorisedSignatoryMobile, authorisedSignatoryEmail,
             authorisedSignatoryDesignation, billingContactName,
             billingContactNumber, billingContactEmail, organisationType,
-            accountManagerId // <-- New value
+            accountManagerId
         ];
         
         const clientResult = await client.query(clientQuery, clientValues);

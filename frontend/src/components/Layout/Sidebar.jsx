@@ -17,34 +17,37 @@ const Sidebar = () => {
     const isSuperAdmin = user?.role === 'superAdmin';
     const isMfaEnabled = user?.is_mfa_enabled;
 
+    if (!isMfaEnabled) {
+        return (
+            <aside className="sidebar">
+                <div className="sidebar-header">MFA Required</div>
+                <div style={{ padding: '20px', textAlign: 'center' }}>
+                    <p>Please enable MFA to access the portal features.</p>
+                </div>
+            </aside>
+        );
+    }
+
     return (
         <aside className="sidebar">
             <div className="sidebar-header">
-                {isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Viewer Portal')}
+                {isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Client Portal')}
             </div>
             <nav className="sidebar-nav">
                 <ul>
                     <li><NavLink to="/dashboard"><DashboardIcon /> Dashboard</NavLink></li>
-                    
                     {!isSuperAdmin && (
                         <li><NavLink to="/clients" end><ClientsIcon /> Show Clients</NavLink></li>
                     )}
-                    
                     {isSuperAdmin && (
                         <>
                             <li><NavLink to="/manage-users"><UserIcon /> Manage Users</NavLink></li>
                             <li><NavLink to="/account-managers"><AccountManagerIcon /> Account Managers</NavLink></li>
                         </>
                     )}
-                    
                     {isAdmin && (
-                        <li>
-                            <NavLink to="/clients/create" className={!isMfaEnabled ? 'disabled-link' : ''}>
-                                <CreateIcon /> Create Client
-                            </NavLink>
-                        </li>
+                        <li><NavLink to="/clients/create"><CreateIcon /> Create Client</NavLink></li>
                     )}
-                    
                     {isSuperAdmin ? (
                          <li><NavLink to="/settings/superadmin-mfa"><SettingsIcon /> Settings</NavLink></li>
                     ) : isAdmin ? (
