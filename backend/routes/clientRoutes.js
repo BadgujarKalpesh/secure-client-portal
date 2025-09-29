@@ -7,7 +7,8 @@ const {
     updateClient,
     deleteClient,
     updateClientStatus,
-    getClientDocuments
+    getClientDocuments,
+    viewClientDocument
 } = require('../controllers/clientController');
 const upload = require('../config/cloudinary');
 const { protect, adminOnly, mfaEnabled } = require('../middleware/authMiddleware');
@@ -34,8 +35,9 @@ router.route('/:id')
     .put(adminOnly, updateClient)
     .delete(adminOnly, deleteClient);
 
-router.put('/:id/status', updateClientStatus);
+    router.put('/:id/status', updateClientStatus);
 
-router.get('/:id/documents', getClientDocuments); 
+    router.get('/:id/documents', getClientDocuments);
+    router.get('/:id/documents/:docId/view', viewClientDocument);
 
 module.exports = router;

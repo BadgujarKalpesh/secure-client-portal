@@ -71,14 +71,15 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
         }
     };
     
-    const handleViewPdf = async (url) => {
+    const handleViewPdf = async (docId) => {
         try {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            const objectUrl = URL.createObjectURL(blob);
+            const response = await api.get(`/clients/${client.id}/documents/${docId}/view`, {
+                responseType: 'blob'
+            });
+            const objectUrl = URL.createObjectURL(response.data);
             setPdfPreviewUrl(objectUrl);
         } catch (err) {
-            console.error("Error fetching PDF for preview:", err);
+            console.error("Error preparing PDF for preview:", err);
             setError("Could not load the PDF for preview.");
         }
     };
@@ -123,7 +124,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                                     documents.map(doc => (
                                         <div key={doc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                             <span>{doc.document_type.replace(/([A-Z])/g, ' $1').trim()}: {doc.document_unique_id}</span>
-                                            <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(doc.url)}>View PDF</button>
+                                            <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(doc.id)}>View PDF</button>
                                         </div>
                                     ))
                                 ) : (

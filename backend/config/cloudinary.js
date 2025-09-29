@@ -5,7 +5,8 @@ const multer = require('multer');
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true // ensure https URLs
 });
 
 const storage = new CloudinaryStorage({
@@ -13,7 +14,8 @@ const storage = new CloudinaryStorage({
   params: {
     folder: 'kyc_documents',
     allowed_formats: ['jpeg', 'png', 'jpg', 'pdf'],
-    resource_type: 'auto' // <-- ADD THIS LINE
+    resource_type: 'auto',
+    type: 'upload' // public assets (not 'authenticated' or 'private')
   }
 });
 

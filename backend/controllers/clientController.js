@@ -20,7 +20,9 @@ const createClient = async (req, res) => {
 
                     documents.push({
                         document_type: fieldName,
-                        url: file.path,
+                        url: (file.path || '')
+                            .replace('http://', 'https://')
+                            .replace(/\/image\/upload\/(.*\.pdf)$/i, '/raw/upload/$1'),
                         public_id: file.filename,
                         document_unique_id: uniqueId || 'N/A'
                     });
@@ -100,9 +102,39 @@ const deleteClient = async (req, res) => {
 const getClientDocuments = async (req, res) => {
     try {
         const documents = await Client.findDocsById(req.params.id);
-        res.status(200).json(documents);
+        const normalized = documents.map(d => {
+            let url = (d.url || '').replace('http://', 'https://');
+            return { ...d, url };
+        });
+        res.status(200).json(normalized);
     } catch (error) {
         console.error(`Error fetching documents for client ${req.params.id}:`, error);
+        res.status(500).json({ message: 'Server Error' });
+    }
+};
+
+const viewClientDocument = async (req, res) => {
+    try {
+        const clientId = req.params.id;
+        const docId = req.params.docId;
+        const doc = await Client.findDocByDocId(docId);
+
+        if (!doc || String(doc.client_id) !== String(clientId)) {
+            return res.status(404).json({ message: 'Document not found' });
+        }
+
+        const publicId = doc.public_id; // e.g., 'kyc_documents/xyz123'
+        const url = cloudinary.url(publicId, {
+            resource_type: 'auto',
+            type: 'upload',
+            secure: true,
+            format: 'pdf',
+        });
+
+        // Let the browser/axios follow to Cloudinary
+        return res.redirect(302, url);
+    } catch (error) {
+        console.error('Error preparing document for view:', error);
         res.status(500).json({ message: 'Server Error' });
     }
 };
@@ -114,5 +146,6 @@ module.exports = {
     updateClient,
     deleteClient,
     updateClientStatus,
-    getClientDocuments
+    getClientDocuments,
+    viewClientDocument
 };

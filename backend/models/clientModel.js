@@ -178,6 +178,11 @@ const findDocsById = async (id) => {
     return rows;
 };
 
+const findDocByDocId = async (docId) => {
+    const query = 'SELECT * FROM documents WHERE id = $1';
+    const { rows } = await pool.query(query, [docId]);
+    return rows[0];
+};
 
 module.exports = {
     create,
@@ -187,4 +192,5 @@ module.exports = {
     updateStatus,
     remove,
     findDocsById,
+    findDocByDocId,
 };
