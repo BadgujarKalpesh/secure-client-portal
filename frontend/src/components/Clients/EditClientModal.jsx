@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const PdfViewerModal = ({ fileUrl, onClose }) => {
     if (!fileUrl) return null;
-    console.log("FileUrl : ",fileUrl )
+
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
@@ -42,6 +42,21 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
         fetchDocuments();
     }, [client.id]);
 
+    const handleViewPdf = async (url) => {
+        try {
+            // Fetch the PDF from the URL
+            const response = await fetch(url);
+            // Create a blob from the response
+            const blob = await response.blob();
+            // Create an object URL from the blob
+            const objectUrl = URL.createObjectURL(blob);
+            setPdfPreviewUrl(objectUrl);
+        } catch (err) {
+            console.error("Error fetching PDF for preview:", err);
+            setError("Could not load the PDF for preview.");
+        }
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prevState => ({ ...prevState, [name]: value }));
@@ -70,19 +85,6 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
             setError(err.response?.data?.message || `Failed to ${newStatus.toLowerCase()} client.`);
         }
     };
-    
-    const handleViewPdf = async (docId) => {
-        try {
-            const response = await api.get(`/clients/${client.id}/documents/${docId}/view`, {
-                responseType: 'blob'
-            });
-            const objectUrl = URL.createObjectURL(response.data);
-            setPdfPreviewUrl(objectUrl);
-        } catch (err) {
-            console.error("Error preparing PDF for preview:", err);
-            setError("Could not load the PDF for preview.");
-        }
-    };
 
     return (
         <>
@@ -105,7 +107,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
 
                             <h4 className="form-section-header">Section B – Authorised Signatory</h4>
                             <div className="form-grid">
-                                <div className="form-group"><label>Company Name</label><input name="authorised_signatory_full_name" value={formData.authorised_signatory_full_name || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
+                                <div className="form-group"><label>Full Name</label><input name="authorised_signatory_full_name" value={formData.authorised_signatory_full_name || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
                                 <div className="form-group"><label>Mobile Number</label><input name="authorised_signatory_mobile" value={formData.authorised_signatory_mobile || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
                                 <div className="form-group"><label>Email ID</label><input name="authorised_signatory_email" value={formData.authorised_signatory_email || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
                                 <div className="form-group"><label>Designation</label><input name="authorised_signatory_designation" value={formData.authorised_signatory_designation || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
@@ -124,7 +126,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                                     documents.map(doc => (
                                         <div key={doc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                             <span>{doc.document_type.replace(/([A-Z])/g, ' $1').trim()}: {doc.document_unique_id}</span>
-                                            <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(doc.id)}>View PDF</button>
+                                            <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(doc.url)}>View PDF</button>
                                         </div>
                                     ))
                                 ) : (
