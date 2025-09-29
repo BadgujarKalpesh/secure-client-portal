@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
+import logo from '../assets/logo.png';
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
@@ -44,7 +45,8 @@ const LoginPage = () => {
         <div className="login-container">
             <div className="login-card">
                 <div className="login-header">
-                    <h1>Claritel.ai</h1>
+                    <img src={logo} alt="Claritel.ai Logo" className="login-logo" />
+                    {/* <h1>Claritel.ai</h1> */}
                     <h2>KYC Portal</h2>
                 </div>
                 

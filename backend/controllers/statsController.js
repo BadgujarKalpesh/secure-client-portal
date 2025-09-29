@@ -12,6 +12,12 @@ const getStats = async (req, res) => {
             const viewerStatsQuery = 'SELECT COUNT(*) AS total FROM viewers';
             const viewerStatsResult = await pool.query(viewerStatsQuery);
             stats.viewers = viewerStatsResult.rows[0];
+
+            // ADDED: Query to get the count of account managers
+            const accountManagerStatsQuery = 'SELECT COUNT(*) AS total FROM account_managers';
+            const accountManagerStatsResult = await pool.query(accountManagerStatsQuery);
+            stats.accountManagers = accountManagerStatsResult.rows[0];
+
         } else {
             const clientStatsQuery = `
                 SELECT 

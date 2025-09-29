@@ -9,7 +9,8 @@ const DashboardPage = () => {
     const [stats, setStats] = useState({
         clients: { total: 0, approved: 0, rejected: 0 },
         admins: { total: 0 },
-        viewers: { total: 0 }
+        viewers: { total: 0 },
+        accountManagers: { total: 0 }
     });
 
     useEffect(() => {
@@ -49,6 +50,10 @@ const DashboardPage = () => {
                         <div className="stats-card viewers">
                             <h2>Total Viewers</h2>
                             <div className="count">{stats.viewers.total}</div>
+                        </div>
+                        <div className="stats-card approved"> {/* <-- NEW CARD FOR ACCOUNT MANAGERS --> */}
+                            <h2>Account Managers</h2>
+                            <div className="count">{stats.accountManagers.total}</div>
                         </div>
                     </>
                 ) : (

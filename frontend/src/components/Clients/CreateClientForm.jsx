@@ -48,6 +48,11 @@ const MultiStepForm = ({ onClientAdded }) => {
     const [pdfPreview, setPdfPreview] = useState(null);
     const [accountManagers, setAccountManagers] = useState([]);
 
+    const countryCodes = [
+        { name: 'India', code: '+91' },
+        { name: 'USA', code: '+1' },
+    ];
+
     useEffect(() => {
         const fetchAccountManagers = async () => {
             try {
@@ -225,8 +230,9 @@ const MultiStepForm = ({ onClientAdded }) => {
                                 <label>Mobile Number</label>
                                 <div className="input-group">
                                     <select name="authorisedSignatoryCountryCode" value={formData.authorisedSignatoryCountryCode} onChange={handleTextChange} className="form-control country-code">
-                                        <option>+91</option>
-                                        <option>+1</option>
+                                        {countryCodes.map(country => (
+                                            <option key={country.name} value={country.code}>{country.code} ({country.name})</option>
+                                        ))}
                                     </select>
                                     <input name="authorisedSignatoryMobile" type="tel" value={formData.authorisedSignatoryMobile} onChange={handleTextChange} className="form-control" />
                                 </div>
@@ -247,8 +253,9 @@ const MultiStepForm = ({ onClientAdded }) => {
                                 <label>Billing Contact Number</label>
                                 <div className="input-group">
                                     <select name="billingContactCountryCode" value={formData.billingContactCountryCode} onChange={handleTextChange} className="form-control country-code">
-                                        <option>+91</option>
-                                        <option>+1</option>
+                                        {countryCodes.map(country => (
+                                            <option key={country.name} value={country.code}>{country.code} ({country.name})</option>
+                                        ))}
                                     </select>
                                     <input name="billingContactNumber" type="tel" value={formData.billingContactNumber} onChange={handleTextChange} className="form-control" />
                                 </div>
