@@ -10,6 +10,7 @@ const protect = async (req, res, next) => {
             token = req.headers.authorization.split(' ')[1];
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+            // console.log("decoded.role : ", decoded.role);
             if (decoded.role === 'admin') {
                 req.user = await Admin.findById(decoded.id);
             } else if (decoded.role === 'viewer') {
@@ -59,6 +60,7 @@ const adminOrSuperAdmin = (req, res, next) => {
 };
 
 const mfaEnabled = (req, res, next) => {
+    // console.log("HIiiiiiiiiiiiiii")
     if (req.user && req.user.is_mfa_enabled) {
         next();
     } else {

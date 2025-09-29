@@ -50,8 +50,8 @@ const LoginPage = () => {
                 
                 <form onSubmit={handleSubmit}>
                     <div className="role-toggle-container">
-                        <div style={toggleButtonStyle('admin')} onClick={() => setRole('admin')}>Admin</div>
                         <div style={toggleButtonStyle('superAdmin')} onClick={() => setRole('superAdmin')}>Super Admin</div>
+                        <div style={toggleButtonStyle('admin')} onClick={() => setRole('admin')}>Admin</div>
                         <div style={toggleButtonStyle('viewer')} onClick={() => setRole('viewer')}>Viewer</div>
                     </div>
 

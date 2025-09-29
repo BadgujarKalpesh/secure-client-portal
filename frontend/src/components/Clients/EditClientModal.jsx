@@ -41,10 +41,18 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
         fetchDocuments();
     }, [client.id]);
 
-    const handleViewPdf = (docId) => {
-        // Use the new secure backend endpoint
-        const secureUrl = `${api.defaults.baseURL}/clients/documents/${docId}/view`;
-        setPdfPreviewUrl(secureUrl);
+    const handleViewPdf = async (docId) => {
+        try {
+            // Match backend route: /clients/documents/:docId/view
+            const response = await api.get(`/clients/documents/${docId}/view`, {
+                responseType: 'blob'
+            });
+            const objectUrl = URL.createObjectURL(response.data);
+            setPdfPreviewUrl(objectUrl);
+        } catch (err) {
+            console.error("Error preparing PDF for preview:", err);
+            setError(err?.response?.data?.message || 'Could not load the PDF for preview.');
+        }
     };
     
     const handleChange = (e) => {
