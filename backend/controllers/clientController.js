@@ -1,5 +1,6 @@
 const Client = require('../models/clientModel');
 const cloudinary = require('cloudinary').v2;
+const https = require('https');
 
 const createClient = async (req, res) => {
     try {
@@ -139,6 +140,33 @@ const viewClientDocument = async (req, res) => {
     }
 };
 
+const streamClientDocument = async (req, res) => {
+    try {
+        const { docId } = req.params;
+        const document = await Client.findDocumentById(docId);
+
+        if (!document || !document.url) {
+            return res.status(404).json({ message: 'Document not found' });
+        }
+
+        // Set the correct content type for the response
+        res.setHeader('Content-Type', 'application/pdf');
+
+        // Securely fetch the document from Cloudinary's URL and pipe it to the response
+        https.get(document.url, (stream) => {
+            stream.pipe(res);
+        }).on('error', (e) => {
+            console.error('Error fetching from Cloudinary:', e);
+            res.status(502).json({ message: 'Failed to fetch the document.' });
+        });
+
+    } catch (error) {
+        console.error('Error streaming document:', error);
+        res.status(500).json({ message: 'Server error while streaming document.' });
+    }
+};
+
+
 module.exports = {
     createClient,
     getAllClients,
@@ -147,5 +175,6 @@ module.exports = {
     deleteClient,
     updateClientStatus,
     getClientDocuments,
-    viewClientDocument
+    viewClientDocument,
+    streamClientDocument
 };

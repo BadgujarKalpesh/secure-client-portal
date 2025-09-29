@@ -184,6 +184,12 @@ const findDocByDocId = async (docId) => {
     return rows[0];
 };
 
+const findDocumentById = async (docId) => {
+    const query = 'SELECT * FROM documents WHERE id = $1';
+    const { rows } = await pool.query(query, [docId]);
+    return rows[0];
+};
+
 module.exports = {
     create,
     findAll,
@@ -193,4 +199,5 @@ module.exports = {
     remove,
     findDocsById,
     findDocByDocId,
+    findDocumentById,
 };

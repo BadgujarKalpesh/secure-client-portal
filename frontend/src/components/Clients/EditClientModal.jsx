@@ -4,7 +4,6 @@ import { useAuth } from '../../context/AuthContext';
 
 const PdfViewerModal = ({ fileUrl, onClose }) => {
     if (!fileUrl) return null;
-
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
@@ -42,21 +41,12 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
         fetchDocuments();
     }, [client.id]);
 
-    const handleViewPdf = async (url) => {
-        try {
-            // Fetch the PDF from the URL
-            const response = await fetch(url);
-            // Create a blob from the response
-            const blob = await response.blob();
-            // Create an object URL from the blob
-            const objectUrl = URL.createObjectURL(blob);
-            setPdfPreviewUrl(objectUrl);
-        } catch (err) {
-            console.error("Error fetching PDF for preview:", err);
-            setError("Could not load the PDF for preview.");
-        }
+    const handleViewPdf = (docId) => {
+        // Use the new secure backend endpoint
+        const secureUrl = `${api.defaults.baseURL}/clients/documents/${docId}/view`;
+        setPdfPreviewUrl(secureUrl);
     };
-
+    
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prevState => ({ ...prevState, [name]: value }));
@@ -120,19 +110,22 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                                 <div className="form-group"><label>Billing Email ID</label><input name="billing_contact_email" value={formData.billing_contact_email || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
                             </div>
 
-                            <h4 className="form-section-header">Documents</h4>
+                             <h4 className="form-section-header">Documents</h4>
                             <div className="preview-section" style={{ gridColumn: '1 / -1' }}>
                                 {documents.length > 0 ? (
                                     documents.map(doc => (
                                         <div key={doc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                             <span>{doc.document_type.replace(/([A-Z])/g, ' $1').trim()}: {doc.document_unique_id}</span>
-                                            <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(doc.url)}>View PDF</button>
+                                            <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(doc.id)}>View PDF</button>
                                         </div>
                                     ))
                                 ) : (
                                     <p>No documents found for this client.</p>
                                 )}
                             </div>
+
+                            {error && <div className="message error">{error}</div>}
+                            {message && <div className="message success">{message}</div>}
 
                             {error && <div className="message error" style={{ color: 'red', marginTop: '15px' }}>{error}</div>}
                             {message && <div className="message success" style={{ color: 'green', marginTop: '15px' }}>{message}</div>}

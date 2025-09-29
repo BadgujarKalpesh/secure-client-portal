@@ -8,7 +8,8 @@ const {
     deleteClient,
     updateClientStatus,
     getClientDocuments,
-    viewClientDocument
+    viewClientDocument,
+    streamClientDocument
 } = require('../controllers/clientController');
 const upload = require('../config/cloudinary');
 const { protect, adminOnly, mfaEnabled } = require('../middleware/authMiddleware');
@@ -39,5 +40,6 @@ router.route('/:id')
 
     router.get('/:id/documents', getClientDocuments);
     router.get('/:id/documents/:docId/view', viewClientDocument);
+router.get('/documents/:docId/view', protect, mfaEnabled, streamClientDocument);
 
 module.exports = router;
