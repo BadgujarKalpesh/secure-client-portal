@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
 import { useAuth } from '../../context/AuthContext';
 
-const PdfViewerModal = ({ url, onClose }) => {
-    if (!url) return null;
+const PdfViewerModal = ({ fileUrl, onClose }) => {
+    if (!fileUrl) return null;
+    console.log("FileUrl : ",fileUrl )
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
@@ -12,13 +13,12 @@ const PdfViewerModal = ({ url, onClose }) => {
                     <button onClick={onClose} className="close-button">&times;</button>
                 </div>
                 <div className="modal-body" style={{ height: '70vh' }}>
-                    <iframe src={url} width="100%" height="100%" title="PDF Preview" style={{ border: 'none' }} />
+                    <iframe src={fileUrl} width="100%" height="100%" title="PDF Preview" style={{ border: 'none' }} />
                 </div>
             </div>
         </div>
     );
 };
-
 
 const EditClientModal = ({ client, onClose, onUpdate }) => {
     const { user } = useAuth();
@@ -104,7 +104,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
 
                             <h4 className="form-section-header">Section B – Authorised Signatory</h4>
                             <div className="form-grid">
-                                <div className="form-group"><label>Full Name</label><input name="authorised_signatory_full_name" value={formData.authorised_signatory_full_name || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
+                                <div className="form-group"><label>Company Name</label><input name="authorised_signatory_full_name" value={formData.authorised_signatory_full_name || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
                                 <div className="form-group"><label>Mobile Number</label><input name="authorised_signatory_mobile" value={formData.authorised_signatory_mobile || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
                                 <div className="form-group"><label>Email ID</label><input name="authorised_signatory_email" value={formData.authorised_signatory_email || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
                                 <div className="form-group"><label>Designation</label><input name="authorised_signatory_designation" value={formData.authorised_signatory_designation || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
@@ -147,7 +147,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                     </form>
                 </div>
             </div>
-            {pdfPreviewUrl && <PdfViewerModal url={pdfPreviewUrl} onClose={() => setPdfPreviewUrl(null)} />}
+            {pdfPreviewUrl && <PdfViewerModal fileUrl={pdfPreviewUrl} onClose={() => setPdfPreviewUrl(null)} />}
         </>
     );
 };

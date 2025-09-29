@@ -4,6 +4,7 @@ import api from '../../api/axiosConfig';
 const PdfViewerModal = ({ file, onClose }) => {
     if (!file) return null;
     const fileUrl = URL.createObjectURL(file);
+    console.log("FileUrl : ",fileUrl )
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
@@ -27,10 +28,12 @@ const MultiStepForm = ({ onClientAdded }) => {
         organisationDomainId: '',
         natureOfBusiness: '',
         authorisedSignatoryFullName: '',
+        authorisedSignatoryCountryCode: '+91',
         authorisedSignatoryMobile: '',
         authorisedSignatoryEmail: '',
         authorisedSignatoryDesignation: '',
         billingContactName: '',
+        billingContactCountryCode: '+91',
         billingContactNumber: '',
         billingContactEmail: '',
         organisationType: 'Pvt Ltd',
@@ -100,19 +103,14 @@ const MultiStepForm = ({ onClientAdded }) => {
             if (!formData.organisationDomainId) newErrors.organisationDomainId = "Organisation Domain ID is required.";
             if (!formData.natureOfBusiness) newErrors.natureOfBusiness = "Nature of Business is required.";
         } else if (step === 2) {
-            if (!formData.authorisedSignatoryFullName) newErrors.authorisedSignatoryFullName = "Full Name is required.";
-            if (!formData.authorisedSignatoryMobile) newErrors.authorisedSignatoryMobile = "Mobile Number is required.";
-            else if (!phoneRegex.test(formData.authorisedSignatoryMobile)) newErrors.authorisedSignatoryMobile = "Please enter a valid 10-digit number.";
-            if (!formData.authorisedSignatoryEmail) newErrors.authorisedSignatoryEmail = "Email ID is required.";
-            else if(!emailRegex.test(formData.authorisedSignatoryEmail)) newErrors.authorisedSignatoryEmail = "Please enter a valid email address.";
-            if (!formData.authorisedSignatoryDesignation) newErrors.authorisedSignatoryDesignation = "Designation is required.";
+            if (!formData.authorisedSignatoryCountryCode) newErrors.authorisedSignatoryCountryCode = "Country code is required.";
+            if (!phoneRegex.test(formData.authorisedSignatoryMobile)) newErrors.authorisedSignatoryMobile = "A valid 10-digit number is required.";
+            if (!emailRegex.test(formData.authorisedSignatoryEmail)) newErrors.authorisedSignatoryEmail = "A valid email is required.";
         } else if (step === 3) {
-            if (!formData.billingContactName) newErrors.billingContactName = "Billing Contact Name is required.";
-            if (!formData.billingContactNumber) newErrors.billingContactNumber = "Billing Contact Number is required.";
-             else if (!phoneRegex.test(formData.billingContactNumber)) newErrors.billingContactNumber = "Please enter a valid 10-digit number.";
-            if (!formData.billingContactEmail) newErrors.billingContactEmail = "Billing Email ID is required.";
-            else if(!emailRegex.test(formData.billingContactEmail)) newErrors.billingContactEmail = "Please enter a valid email address.";
-        } else if (step === 4) {
+            if (!formData.billingContactCountryCode) newErrors.billingContactCountryCode = "Country code is required.";
+            if (!phoneRegex.test(formData.billingContactNumber)) newErrors.billingContactNumber = "A valid 10-digit number is required.";
+            if (!emailRegex.test(formData.billingContactEmail)) newErrors.billingContactEmail = "A valid email is required.";
+        }else if (step === 4) {
             const requiredDocs = ['certificateOfIncorporation', 'gstCertificate', 'panCard', 'officeProof', 'utilityBill', 'signatoryLetter'];
             requiredDocs.forEach(doc => {
                 if (!documentIds[doc + 'Id']) {
@@ -222,10 +220,20 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <>
                         <h3 className="form-step-heading">Section B – Authorised Signatory</h3>
                         <div className="form-grid">
-                            <div className="form-group"><label>Company Name</label><input name="authorisedSignatoryFullName" value={formData.authorisedSignatoryFullName} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryFullName && <p className="error-message">{errors.authorisedSignatoryFullName}</p>}</div>
-                            <div className="form-group"><label>Mobile Number</label><input name="authorisedSignatoryMobile" type="tel" value={formData.authorisedSignatoryMobile} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryMobile && <p className="error-message">{errors.authorisedSignatoryMobile}</p>}</div>
+                            <div className="form-group"><label>Company Name</label><input name="authorisedSignatoryFullName" value={formData.authorisedSignatoryFullName} onChange={handleTextChange} className="form-control" /></div>
+                            <div className="form-group">
+                                <label>Mobile Number</label>
+                                <div className="input-group">
+                                    <select name="authorisedSignatoryCountryCode" value={formData.authorisedSignatoryCountryCode} onChange={handleTextChange} className="form-control country-code">
+                                        <option>+91</option>
+                                        <option>+1</option>
+                                    </select>
+                                    <input name="authorisedSignatoryMobile" type="tel" value={formData.authorisedSignatoryMobile} onChange={handleTextChange} className="form-control" />
+                                </div>
+                                {errors.authorisedSignatoryMobile && <p className="error-message">{errors.authorisedSignatoryMobile}</p>}
+                            </div>
                             <div className="form-group"><label>Email ID</label><input name="authorisedSignatoryEmail" type="email" value={formData.authorisedSignatoryEmail} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryEmail && <p className="error-message">{errors.authorisedSignatoryEmail}</p>}</div>
-                            <div className="form-group"><label>Designation</label><input name="authorisedSignatoryDesignation" value={formData.authorisedSignatoryDesignation} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryDesignation && <p className="error-message">{errors.authorisedSignatoryDesignation}</p>}</div>
+                            <div className="form-group"><label>Designation</label><input name="authorisedSignatoryDesignation" value={formData.authorisedSignatoryDesignation} onChange={handleTextChange} className="form-control" /></div>
                         </div>
                     </>
                 );
@@ -234,8 +242,18 @@ const MultiStepForm = ({ onClientAdded }) => {
                      <>
                         <h3 className="form-step-heading">Section C – Billing Contact</h3>
                         <div className="form-grid">
-                            <div className="form-group"><label>Billing Contact Name</label><input name="billingContactName" value={formData.billingContactName} onChange={handleTextChange} className="form-control" />{errors.billingContactName && <p className="error-message">{errors.billingContactName}</p>}</div>
-                            <div className="form-group"><label>Billing Contact Number</label><input name="billingContactNumber" type="tel" value={formData.billingContactNumber} onChange={handleTextChange} className="form-control" />{errors.billingContactNumber && <p className="error-message">{errors.billingContactNumber}</p>}</div>
+                            <div className="form-group"><label>Billing Contact Name</label><input name="billingContactName" value={formData.billingContactName} onChange={handleTextChange} className="form-control" /></div>
+                            <div className="form-group">
+                                <label>Billing Contact Number</label>
+                                <div className="input-group">
+                                    <select name="billingContactCountryCode" value={formData.billingContactCountryCode} onChange={handleTextChange} className="form-control country-code">
+                                        <option>+91</option>
+                                        <option>+1</option>
+                                    </select>
+                                    <input name="billingContactNumber" type="tel" value={formData.billingContactNumber} onChange={handleTextChange} className="form-control" />
+                                </div>
+                                {errors.billingContactNumber && <p className="error-message">{errors.billingContactNumber}</p>}
+                            </div>
                             <div className="form-group"><label>Billing Email ID</label><input name="billingContactEmail" type="email" value={formData.billingContactEmail} onChange={handleTextChange} className="form-control" />{errors.billingContactEmail && <p className="error-message">{errors.billingContactEmail}</p>}</div>
                         </div>
                     </>
@@ -333,7 +351,7 @@ const MultiStepForm = ({ onClientAdded }) => {
                             </div>
                             <div className="preview-section">
                                 <h4>Authorised Signatory</h4>
-                                <p><strong>Full Name:</strong> {formData.authorisedSignatoryFullName}</p>
+                                <p><strong>Company Name:</strong> {formData.authorisedSignatoryFullName}</p>
                                 <p><strong>Mobile:</strong> {formData.authorisedSignatoryMobile}</p>
                                 <p><strong>Email:</strong> {formData.authorisedSignatoryEmail}</p>
                                 <p><strong>Designation:</strong> {formData.authorisedSignatoryDesignation}</p>
