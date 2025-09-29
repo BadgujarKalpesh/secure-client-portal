@@ -2,9 +2,8 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
 import { useAuth } from '../../context/AuthContext';
 
-const PdfViewerModal = ({ fileUrl, onClose }) => {
-    if (!fileUrl) return null;
-
+const PdfViewerModal = ({ url, onClose }) => {
+    if (!url) return null;
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
@@ -13,12 +12,13 @@ const PdfViewerModal = ({ fileUrl, onClose }) => {
                     <button onClick={onClose} className="close-button">&times;</button>
                 </div>
                 <div className="modal-body" style={{ height: '70vh' }}>
-                    <iframe src={fileUrl} width="100%" height="100%" title="PDF Preview" style={{ border: 'none' }} />
+                    <iframe src={url} width="100%" height="100%" title="PDF Preview" style={{ border: 'none' }} />
                 </div>
             </div>
         </div>
     );
 };
+
 
 const EditClientModal = ({ client, onClose, onUpdate }) => {
     const { user } = useAuth();
@@ -147,7 +147,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                     </form>
                 </div>
             </div>
-            {pdfPreviewUrl && <PdfViewerModal fileUrl={pdfPreviewUrl} onClose={() => setPdfPreviewUrl(null)} />}
+            {pdfPreviewUrl && <PdfViewerModal url={pdfPreviewUrl} onClose={() => setPdfPreviewUrl(null)} />}
         </>
     );
 };

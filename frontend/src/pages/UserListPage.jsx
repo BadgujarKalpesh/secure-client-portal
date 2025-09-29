@@ -69,9 +69,11 @@ const UserListPage = () => {
                                 <td>{admin.username}</td>
                                 <td>{new Date(admin.created_at).toLocaleDateString()}</td>
                                 <td>
-                                    <button onClick={() => handleEditClick(admin, 'admin')} title="Edit Admin">
-                                        <EditIcon />
-                                    </button>
+                                    <div className="action-icons">
+                                        <button onClick={() => handleEditClick(admin, 'admin')} title="Edit Admin">
+                                            <EditIcon />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -97,9 +99,11 @@ const UserListPage = () => {
                                 <td>{viewer.username}</td>
                                 <td>{new Date(viewer.created_at).toLocaleDateString()}</td>
                                 <td>
-                                    <button onClick={() => handleEditClick(viewer, 'viewer')} title="Edit Viewer">
-                                        <EditIcon />
-                                    </button>
+                                    <div className="action-icons">
+                                        <button onClick={() => handleEditClick(viewer, 'viewer')} title="Edit Viewer">
+                                            <EditIcon />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

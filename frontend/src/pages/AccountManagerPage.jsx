@@ -112,9 +112,11 @@ const AccountManagerPage = () => {
                                 <td>{manager.email}</td>
                                 <td>{manager.contact_number}</td>
                                 <td>
-                                    <button onClick={() => handleEditClick(manager)} title="Edit Manager" className="action-button">
-                                        <EditIcon />
-                                    </button>
+                                    <div className="action-icons">
+                                        <button onClick={() => handleEditClick(manager)} title="Edit Manager" className="action-button">
+                                            <EditIcon />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}

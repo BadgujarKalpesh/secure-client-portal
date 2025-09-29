@@ -19,7 +19,7 @@ const Sidebar = () => {
     return (
         <aside className="sidebar">
             <div className="sidebar-header">
-                {isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Client Portal')}
+                {isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Viewer Portal')}
             </div>
             
             {isMfaEnabled ? (
@@ -31,7 +31,7 @@ const Sidebar = () => {
                         )}
                         {isSuperAdmin && (
                             <>
-                                <li><NavLink to="/manage-users"><UserIcon /> Manage Users</NavLink></li>
+                                <li><NavLink to="/manage-users"><UserIcon /> Manage Employees</NavLink></li>
                                 <li><NavLink to="/account-managers"><AccountManagerIcon /> Account Managers</NavLink></li>
                             </>
                         )}

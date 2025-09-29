@@ -207,6 +207,9 @@ const MultiStepForm = ({ onClientAdded }) => {
                                     <option>Insurance</option>
                                     <option>Banking</option>
                                     <option>Finance</option>
+                                    <option>Automobile</option>
+                                    <option>Travel</option>
+                                    <option>BPO</option>
                                     <option>Other</option>
                                 </select>
                                 {errors.natureOfBusiness && <p className="error-message">{errors.natureOfBusiness}</p>}
@@ -219,7 +222,7 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <>
                         <h3 className="form-step-heading">Section B – Authorised Signatory</h3>
                         <div className="form-grid">
-                            <div className="form-group"><label>Full Name</label><input name="authorisedSignatoryFullName" value={formData.authorisedSignatoryFullName} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryFullName && <p className="error-message">{errors.authorisedSignatoryFullName}</p>}</div>
+                            <div className="form-group"><label>Company Name</label><input name="authorisedSignatoryFullName" value={formData.authorisedSignatoryFullName} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryFullName && <p className="error-message">{errors.authorisedSignatoryFullName}</p>}</div>
                             <div className="form-group"><label>Mobile Number</label><input name="authorisedSignatoryMobile" type="tel" value={formData.authorisedSignatoryMobile} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryMobile && <p className="error-message">{errors.authorisedSignatoryMobile}</p>}</div>
                             <div className="form-group"><label>Email ID</label><input name="authorisedSignatoryEmail" type="email" value={formData.authorisedSignatoryEmail} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryEmail && <p className="error-message">{errors.authorisedSignatoryEmail}</p>}</div>
                             <div className="form-group"><label>Designation</label><input name="authorisedSignatoryDesignation" value={formData.authorisedSignatoryDesignation} onChange={handleTextChange} className="form-control" />{errors.authorisedSignatoryDesignation && <p className="error-message">{errors.authorisedSignatoryDesignation}</p>}</div>
@@ -261,7 +264,7 @@ const MultiStepForm = ({ onClientAdded }) => {
                                 {errors.gstCertificate && <p className="error-message">{errors.gstCertificate}</p>}
                             </div>
                             <div className="document-field">
-                                <label>PAN Card</label>
+                                <label>Company PAN Card</label>
                                 <div className="document-input-group">
                                     <input name="panCardId" placeholder="Enter Document ID" onChange={handleIdChange} className="form-control" />
                                     <input name="panCard" type="file" onChange={handleFileChange} className="form-control" />

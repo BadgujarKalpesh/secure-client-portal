@@ -65,7 +65,7 @@ const ManageUsersPage = () => {
     return (
         <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1>Manage Users</h1>
+                <h1>Manage Employees</h1>
                 <div>
                     <button className="btn btn-primary" style={{ marginRight: '10px' }} onClick={() => handleCreateClick('admin')}>Create Admin</button>
                     <button className="btn btn-primary" onClick={() => handleCreateClick('viewer')}>Create Viewer</button>
@@ -96,9 +96,11 @@ const ManageUsersPage = () => {
                                 <td>{user.username}</td>
                                 <td>{new Date(user.created_at).toLocaleDateString()}</td>
                                 <td>
-                                    <button onClick={() => handleEditClick(user, userType)} title={`Edit ${userType}`}>
-                                        <EditIcon />
-                                    </button>
+                                    <div className="action-icons">
+                                        <button onClick={() => handleEditClick(user, userType)} title={`Edit ${userType}`}>
+                                            <EditIcon />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
