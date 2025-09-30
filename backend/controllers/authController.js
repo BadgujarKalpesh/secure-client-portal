@@ -5,6 +5,7 @@ const QRCode = require('qrcode');
 const Admin = require('../models/adminModel');
 const Viewer = require('../models/viewerModel');
 const SuperAdmin = require('../models/superAdminModel');
+const logAction = require('../utils/auditLogger');
 
 const generateToken = (id, username, role) => {
     return jwt.sign({ id, username, role }, process.env.JWT_SECRET, {
@@ -37,6 +38,7 @@ const loginUser = async (req, res) => {
 
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
+            await logAction(req, 'LOGIN_FAILURE', `Failed login attempt for user: ${username}`);
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
@@ -53,6 +55,9 @@ const loginUser = async (req, res) => {
                 return res.status(401).json({ message: 'Invalid MFA token' });
             }
         }
+
+        await logAction(req, 'LOGIN_SUCCESS', `User ${user.username} logged in successfully.`);
+
         
         res.status(200).json({
             message: 'Login successful',

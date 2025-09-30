@@ -30,6 +30,8 @@ const createClient = async (req, res) => {
         }
         
         const newClient = await Client.create(clientData, documents);
+        await logAction(req, 'CREATE_CLIENT', `Created new client ID ${newClient.customer_id} (${newClient.organisation_name})`);
+
         res.status(201).json(newClient);
 
     } catch (error) {
@@ -51,6 +53,8 @@ const getAllClients = async (req, res) => {
 const getClientById = async (req, res) => {
     try {
         const client = await Client.findById(req.params.id);
+        await logAction(req, 'VIEW_CLIENT', `Viewed details for client ID ${client.customer_id}`);
+
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
         }
@@ -69,6 +73,7 @@ const updateClientStatus = async (req, res) => {
         }
 
         const client = await Client.updateStatus(req.params.id, status);
+        await logAction(req, 'UPDATE_CLIENT_STATUS', `Set status to "${status}" for client ID ${client.customer_id}`);
 
         if (!client) {
             return res.status(404).json({ message: 'Client not found' });
@@ -84,6 +89,8 @@ const updateClientStatus = async (req, res) => {
 const updateClient = async (req, res) => {
     try {
         const updatedClient = await Client.update(req.params.id, req.body);
+        await logAction(req, 'UPDATE_CLIENT', `Updated details for client ID ${updatedClient.customer_id}`);
+
         if (!updatedClient) {
             return res.status(404).json({ message: 'Client not found' });
         }
@@ -212,6 +219,8 @@ const streamClientDocument = async (req, res) => {
 
         // Securely fetch the document from Cloudinary's URL on the server-side
         // and pipe (stream) it directly to the client's browser.
+        await logAction(req, 'VIEW_DOCUMENT', `Viewed document ID ${docId} for client ID ${document.client_id}`);
+
         https.get(document.url, (stream) => {
             stream.pipe(res);
         }).on('error', (e) => {
