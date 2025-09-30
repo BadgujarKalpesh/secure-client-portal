@@ -6,21 +6,26 @@ const Admin = require('../models/adminModel');
 const Viewer = require('../models/viewerModel');
 const SuperAdmin = require('../models/superAdminModel');
 const logAction = require('../utils/auditLogger');
+const { decryptBase64WithPrivateKey } = require('../config/crypto');
 
-const generateToken = (id, username, role) => {
-    return jwt.sign({ id, username, role }, process.env.JWT_SECRET, {
+const generateToken = (id, role) => {
+    return jwt.sign({ id, role }, process.env.JWT_SECRET, {
         expiresIn: '1d',
     });
 };
 
 const loginUser = async (req, res) => {
-    const { username, password, mfaToken, role } = req.body;
+    // Support encrypted fields; keep legacy plain fields as fallback
+    const { encUsername, encPassword, mfaToken, role } = req.body;
 
-    if (!role || !username || !password) {
+    if (!role || (!encUsername && !req.body.username) || (!encPassword && !req.body.password)) {
         return res.status(400).json({ message: 'Username, password, and role are required.' });
     }
 
     try {
+        const username = encUsername ? decryptBase64WithPrivateKey(encUsername) : req.body.username;
+        const password = encPassword ? decryptBase64WithPrivateKey(encPassword) : req.body.password;
+
         let user;
         if (role === 'admin') {
             user = await Admin.findByUsername(username);
@@ -33,6 +38,7 @@ const loginUser = async (req, res) => {
         }
 
         if (!user) {
+            await logAction(req, 'LOGIN_FAILURE', `Failed login attempt for user: ${username}`);
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
@@ -58,14 +64,13 @@ const loginUser = async (req, res) => {
 
         await logAction(req, 'LOGIN_SUCCESS', `User ${user.username} logged in successfully.`);
 
-        
         res.status(200).json({
             message: 'Login successful',
-            token: generateToken(user.id, user.username, role),
-            user: { 
-                username: user.username, 
+            token: generateToken(user.id, role),
+            user: {
+                // Do not include username to avoid exposing identity
                 role: role,
-                is_mfa_enabled: user.is_mfa_enabled // <-- ADD THIS LINE
+                is_mfa_enabled: user.is_mfa_enabled
             }
         });
 
@@ -74,6 +79,7 @@ const loginUser = async (req, res) => {
         res.status(500).json({ message: 'Server error during login.' });
     }
 };
+
 const setupAdminMfa = async (req, res) => {
     try {
         // CHANGED: Use req.user instead of req.admin

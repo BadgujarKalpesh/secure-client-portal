@@ -14,6 +14,12 @@ const { protect, adminOnly, superAdminOnly } = require('../middleware/authMiddle
 
 router.post('/login', loginUser);
 
+// Public key for credential encryption
+const { getPublicKey } = require('../config/crypto');
+router.get('/public-key', (req, res) => {
+    res.status(200).json({ publicKey: getPublicKey() });
+});
+
 // Admin MFA Routes
 router.get('/mfa/setup', protect, adminOnly, setupAdminMfa);
 router.post('/mfa/enable', protect, adminOnly, verifyAndEnableAdminMfa);

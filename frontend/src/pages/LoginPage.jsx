@@ -1,7 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import api from '../api/axiosConfig';
 import logo from '../assets/logo.png';
+
+// Minimal PEM -> ArrayBuffer and RSA-OAEP encrypt helpers
+async function importRsaPublicKey(pem) {
+    const b64 = pem.replace('-----BEGIN PUBLIC KEY-----', '')
+                   .replace('-----END PUBLIC KEY-----', '')
+                   .replace(/\s+/g, '');
+    const raw = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    return await window.crypto.subtle.importKey(
+        'spki',
+        raw.buffer,
+        { name: 'RSA-OAEP', hash: 'SHA-256' },
+        false,
+        ['encrypt']
+    );
+}
+async function rsaOaepEncryptToBase64(publicKey, text) {
+    const enc = new TextEncoder().encode(text);
+    const cipherBuf = await window.crypto.subtle.encrypt({ name: 'RSA-OAEP' }, publicKey, enc);
+    const bytes = new Uint8Array(cipherBuf);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary);
+}
 
 const LoginPage = () => {
     const [username, setUsername] = useState('');
@@ -11,12 +34,41 @@ const LoginPage = () => {
     const [error, setError] = useState('');
     const [role, setRole] = useState('admin');
     const { login } = useAuth();
+    const [publicKeyPem, setPublicKeyPem] = useState(null);
+    const [publicKey, setPublicKey] = useState(null);
+
+    useEffect(() => {
+        let mounted = true;
+        (async () => {
+            try {
+                const { data } = await api.get('/auth/public-key');
+                if (!mounted) return;
+                setPublicKeyPem(data.publicKey);
+                const key = await importRsaPublicKey(data.publicKey);
+                if (!mounted) return;
+                setPublicKey(key);
+            } catch (e) {
+                // Fallback: allow plaintext only if key not available (not recommended)
+                console.error('Failed to fetch public key', e);
+            }
+        })();
+        return () => { mounted = false; };
+    }, []);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
         try {
-            const payload = { username, password, mfaToken, role };
+            let payload;
+            if (publicKey) {
+                const encUsername = await rsaOaepEncryptToBase64(publicKey, username);
+                const encPassword = await rsaOaepEncryptToBase64(publicKey, password);
+                payload = { encUsername, encPassword, mfaToken, role };
+            } else {
+                // Legacy fallback if key not loaded; remove if you want to enforce E2E encryption strictly
+                payload = { username, password, mfaToken, role };
+            }
+
             const response = await api.post('/auth/login', payload);
 
             if (response.data.mfaRequired) {
