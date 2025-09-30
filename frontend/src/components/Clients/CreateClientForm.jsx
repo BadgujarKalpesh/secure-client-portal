@@ -141,10 +141,13 @@ const MultiStepForm = ({ onClientAdded }) => {
         let newErrors = {};
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         const phoneRegex = /^[0-9]{10}$/;
+        const pincodeRegex = /^[0-9]{6}$/;
 
         if (step === 1) {
             if (!formData.organisationName) newErrors.organisationName = "Organisation Name is required.";
-            if (!formData.organisationAddress) newErrors.organisationAddress = "Organisation Address is required.";
+            if (!formData.state) newErrors.state = "State is required.";
+            if (!formData.city) newErrors.city = "City is required.";
+            if (!pincodeRegex.test(formData.pincode)) newErrors.pincode = "A valid 6-digit pincode is required.";
             if (!formData.organisationDomainId) newErrors.organisationDomainId = "Organisation Domain ID is required.";
             if (!formData.natureOfBusiness) newErrors.natureOfBusiness = "Nature of Business is required.";
         } else if (step === 2) {
@@ -228,33 +231,38 @@ const MultiStepForm = ({ onClientAdded }) => {
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Organisation Name</label>
-                                <input name="organisationName" value={formData.organisationName} onChange={handleTextChange} className="form-control" required />
+                                <input name="organisationName" value={formData.organisationName} onChange={handleTextChange} className="form-control" />
+                                {errors.organisationName && <p className="error-message">{errors.organisationName}</p>}
                             </div>
-                            <div className="form-group">
+                             <div className="form-group">
                                 <label>State</label>
-                                <select name="state" value={formData.state} onChange={handleAddressChange} className="form-control" required>
+                                <select name="state" value={formData.state} onChange={handleAddressChange} className="form-control">
                                     <option value="">Select State</option>
                                     {state_arr.map(state => <option key={state} value={state}>{state}</option>)}
                                 </select>
+                                {errors.state && <p className="error-message">{errors.state}</p>}
                             </div>
                             <div className="form-group">
                                 <label>City</label>
-                                <select name="city" value={formData.city} onChange={handleAddressChange} className="form-control" required>
+                                <select name="city" value={formData.city} onChange={handleAddressChange} className="form-control">
                                     <option value="">Select City</option>
                                     {cities.map(city => <option key={city} value={city}>{city}</option>)}
                                 </select>
+                                {errors.city && <p className="error-message">{errors.city}</p>}
                             </div>
                              <div className="form-group">
                                 <label>Pincode</label>
                                 <input name="pincode" value={formData.pincode} onChange={handleAddressChange} className="form-control" />
+                                {errors.pincode && <p className="error-message">{errors.pincode}</p>}
                             </div>
                             <div className="form-group">
                                 <label>Organisation Domain ID</label>
-                                <input name="organisationDomainId" value={formData.organisationDomainId} onChange={handleTextChange} className="form-control" required />
+                                <input name="organisationDomainId" value={formData.organisationDomainId} onChange={handleTextChange} className="form-control" />
+                                {errors.organisationDomainId && <p className="error-message">{errors.organisationDomainId}</p>}
                             </div>
                             <div className="form-group">
                                 <label>Nature of Business</label>
-                                <select name="natureOfBusiness" value={formData.natureOfBusiness} onChange={handleTextChange} className="form-control" required>
+                                <select name="natureOfBusiness" value={formData.natureOfBusiness} onChange={handleTextChange} className="form-control">
                                     <option value="">Select...</option>
                                     <option>Edtech</option>
                                     <option>Healthcare</option>
@@ -266,6 +274,7 @@ const MultiStepForm = ({ onClientAdded }) => {
                                     <option>Finance</option>
                                     <option>Other</option>
                                 </select>
+                                {errors.natureOfBusiness && <p className="error-message">{errors.natureOfBusiness}</p>}
                             </div>
                         </div>
                     </>

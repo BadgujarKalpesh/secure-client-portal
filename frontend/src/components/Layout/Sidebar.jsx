@@ -20,7 +20,7 @@ const Sidebar = () => {
     return (
         <aside className="sidebar">
             <div className="sidebar-header">
-                <img src={logo} alt="Logo" className="sidebar-logo" />
+                {/* <img src={logo} alt="Logo" className="sidebar-logo" /> */}
                 <span>{isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Client Portal')}</span>
             </div>
             
