@@ -1,7 +1,7 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-// import logo from '../../assets/logo.png';
+import logo from '../../assets/logo.png';
 
 // Icon Components
 const DashboardIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>;
@@ -20,28 +20,32 @@ const Sidebar = () => {
     return (
         <aside className="sidebar">
             <div className="sidebar-header">
-                {/* <img src={logo} alt="Logo" className="sidebar-logo-sidebar" />  */}
-                {/* <br /> */}
-
-                {isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Viewer Portal')}
+                <img src={logo} alt="Logo" className="sidebar-logo" />
+                <span>{isSuperAdmin ? 'Super Admin' : (isAdmin ? 'Admin Portal' : 'Client Portal')}</span>
             </div>
             
             {isMfaEnabled ? (
                 <nav className="sidebar-nav">
                     <ul>
                         <li><NavLink to="/dashboard"><DashboardIcon /> Dashboard</NavLink></li>
+                        
+                        {/* Show Clients link for Admins and Viewers */}
                         {!isSuperAdmin && (
                             <li><NavLink to="/clients" end><ClientsIcon /> Show Clients</NavLink></li>
                         )}
+                        
                         {isSuperAdmin && (
                             <>
-                                <li><NavLink to="/manage-users"><UserIcon /> Manage Employees</NavLink></li>
+                                <li><NavLink to="/clients" end><ClientsIcon /> Show Clients</NavLink></li> {/* <-- ADDED FOR SUPER ADMIN */}
+                                <li><NavLink to="/manage-users"><UserIcon /> Manage Users</NavLink></li>
                                 <li><NavLink to="/account-managers"><AccountManagerIcon /> Account Managers</NavLink></li>
                             </>
                         )}
+                        
                         {isAdmin && (
                             <li><NavLink to="/clients/create"><CreateIcon /> Create Client</NavLink></li>
                         )}
+                        
                         {isSuperAdmin ? (
                             <li><NavLink to="/settings/superadmin-mfa"><SettingsIcon /> Settings</NavLink></li>
                         ) : isAdmin ? (

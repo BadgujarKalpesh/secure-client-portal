@@ -22,6 +22,7 @@ const PdfViewerModal = ({ fileUrl, onClose }) => {
 const EditClientModal = ({ client, onClose, onUpdate }) => {
     const { user } = useAuth();
     const isAdmin = user?.role === 'admin';
+    // const isSuperAdmin = user?.role === 'superAdmin';
     
     const [formData, setFormData] = useState({ ...client });
     const [documents, setDocuments] = useState([]);
@@ -41,16 +42,9 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
         fetchDocuments();
     }, [client.id]);
 
-    const handleViewPdf = async (url) => {
-        try {
-            const response = await fetch(url);
-            const blob = await response.blob();
-            const objectUrl = URL.createObjectURL(blob);
-            setPdfPreviewUrl(objectUrl);
-        } catch (err) {
-            console.error("Error fetching PDF for preview:", err);
-            setError("Could not load the PDF for preview.");
-        }
+    const handleViewPdf = (docId) => {
+        const secureUrl = `${api.defaults.baseURL}/clients/documents/${docId}/view`;
+        setPdfPreviewUrl(secureUrl);
     };
     
     const handleChange = (e) => {
@@ -92,7 +86,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                     </div>
                     <form onSubmit={(e) => e.preventDefault()}>
                         <div className="modal-body">
-                            
+                            {/* The readonly attribute is now controlled by whether the user is an admin */}
                             <h4 className="form-section-header">Section A – Organisation Details</h4>
                             <div className="form-grid">
                                 <div className="form-group"><label>Organisation Name</label><input name="organisation_name" value={formData.organisation_name || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
@@ -121,22 +115,24 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                                 {documents.map(doc => (
                                     <div key={doc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                         <span>{doc.document_type.replace(/([A-Z])/g, ' $1').trim()}: {doc.document_unique_id}</span>
-                                        <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(doc.url)}>View PDF</button>
+                                        <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(doc.id)}>View PDF</button>
                                     </div>
                                 ))}
                             </div>
 
-                            {error && <div className="message error" style={{ color: 'red', marginTop: '15px' }}>{error}</div>}
-                            {message && <div className="message success" style={{ color: 'green', marginTop: '15px' }}>{message}</div>}
+                            {error && <div className="message error">{error}</div>}
+                            {message && <div className="message success">{message}</div>}
                         </div>
                         <div className="modal-footer">
-                            {isAdmin && (
+                            {/* Super Admins and Viewers see Approve/Reject buttons */}
+                            {!isAdmin && (
                                 <div className="status-buttons">
                                     <button type="button" className="btn btn-success" onClick={() => handleStatusChange('Approved')}>Approve</button>
                                     <button type="button" className="btn btn-danger" onClick={() => handleStatusChange('Rejected')}>Reject</button>
                                 </div>
                             )}
                             <div>
+                                {/* Only Admins see the Save Changes button */}
                                 {isAdmin && <button type="button" className="btn btn-primary" onClick={handleSaveChanges} style={{ marginRight: '10px' }}>Save Changes</button>}
                                 <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
                             </div>
