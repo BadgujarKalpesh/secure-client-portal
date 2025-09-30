@@ -234,7 +234,7 @@ const MultiStepForm = ({ onClientAdded }) => {
                     <>
                         <h3 className="form-step-heading">Section B – Authorised Signatory</h3>
                         <div className="form-grid">
-                            <div className="form-group"><label>Company Name</label><input name="authorisedSignatoryFullName" value={formData.authorisedSignatoryFullName} onChange={handleTextChange} className="form-control" /></div>
+                            <div className="form-group"><label>Authorised Signatory Name</label><input name="authorisedSignatoryFullName" value={formData.authorisedSignatoryFullName} onChange={handleTextChange} className="form-control" /></div>
                             <div className="form-group">
                                 <label>Mobile Number</label>
                                 <div className="input-group">
@@ -367,7 +367,7 @@ const MultiStepForm = ({ onClientAdded }) => {
                             </div>
                             <div className="preview-section">
                                 <h4>Authorised Signatory</h4>
-                                <p><strong>Company Name:</strong> {formData.authorisedSignatoryFullName}</p>
+                                <p><strong>Authorised Signatory Name:</strong> {formData.authorisedSignatoryFullName}</p>
                                 <p><strong>Mobile:</strong> {formData.authorisedSignatoryMobile}</p>
                                 <p><strong>Email:</strong> {formData.authorisedSignatoryEmail}</p>
                                 <p><strong>Designation:</strong> {formData.authorisedSignatoryDesignation}</p>

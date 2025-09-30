@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 
 const PdfViewerModal = ({ fileUrl, onClose }) => {
     if (!fileUrl) return null;
+
     return (
         <div className="modal-backdrop" onClick={onClose}>
             <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
@@ -22,7 +23,7 @@ const PdfViewerModal = ({ fileUrl, onClose }) => {
 const EditClientModal = ({ client, onClose, onUpdate }) => {
     const { user } = useAuth();
     const isAdmin = user?.role === 'admin';
-    // const isSuperAdmin = user?.role === 'superAdmin';
+    const isSuperAdmin = user?.role === 'superAdmin';
     
     const [formData, setFormData] = useState({ ...client });
     const [documents, setDocuments] = useState([]);
@@ -42,9 +43,23 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
         fetchDocuments();
     }, [client.id]);
 
-    const handleViewPdf = (docId) => {
-        const secureUrl = `${api.defaults.baseURL}/clients/documents/${docId}/view`;
-        setPdfPreviewUrl(secureUrl);
+    const handleViewPdf = async (docId) => {
+        try {
+            const response = await api.get(`/clients/documents/${docId}/view`, {
+                responseType: 'blob', // This is crucial for handling the file stream
+            });
+            // Create a Blob from the PDF stream
+            const file = new Blob(
+              [response.data], 
+              {type: 'application/pdf'}
+            );
+            // Build a URL from the file
+            const fileURL = URL.createObjectURL(file);
+            setPdfPreviewUrl(fileURL);
+        } catch (err) {
+            console.error("Error fetching PDF for preview:", err);
+            setError("Could not load the PDF for preview.");
+        }
     };
     
     const handleChange = (e) => {
@@ -86,7 +101,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                     </div>
                     <form onSubmit={(e) => e.preventDefault()}>
                         <div className="modal-body">
-                            {/* The readonly attribute is now controlled by whether the user is an admin */}
+                            
                             <h4 className="form-section-header">Section A – Organisation Details</h4>
                             <div className="form-grid">
                                 <div className="form-group"><label>Organisation Name</label><input name="organisation_name" value={formData.organisation_name || ''} onChange={handleChange} readOnly={!isAdmin} className="form-control" /></div>
@@ -112,27 +127,29 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
 
                             <h4 className="form-section-header">Documents</h4>
                             <div className="preview-section" style={{ gridColumn: '1 / -1' }}>
-                                {documents.map(doc => (
-                                    <div key={doc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                        <span>{doc.document_type.replace(/([A-Z])/g, ' $1').trim()}: {doc.document_unique_id}</span>
-                                        <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(doc.id)}>View PDF</button>
-                                    </div>
-                                ))}
+                                {documents.length > 0 ? (
+                                    documents.map(doc => (
+                                        <div key={doc.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                            <span>{doc.document_type.replace(/([A-Z])/g, ' $1').trim()}: {doc.document_unique_id}</span>
+                                            <button type="button" className="btn btn-secondary" onClick={() => handleViewPdf(doc.id)}>View PDF</button>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p>No documents found for this client.</p>
+                                )}
                             </div>
 
-                            {error && <div className="message error">{error}</div>}
-                            {message && <div className="message success">{message}</div>}
+                            {error && <div className="message error" style={{ color: 'red', marginTop: '15px' }}>{error}</div>}
+                            {message && <div className="message success" style={{ color: 'green', marginTop: '15px' }}>{message}</div>}
                         </div>
                         <div className="modal-footer">
-                            {/* Super Admins and Viewers see Approve/Reject buttons */}
-                            {!isAdmin && (
+                            {isSuperAdmin && (
                                 <div className="status-buttons">
                                     <button type="button" className="btn btn-success" onClick={() => handleStatusChange('Approved')}>Approve</button>
                                     <button type="button" className="btn btn-danger" onClick={() => handleStatusChange('Rejected')}>Reject</button>
                                 </div>
                             )}
                             <div>
-                                {/* Only Admins see the Save Changes button */}
                                 {isAdmin && <button type="button" className="btn btn-primary" onClick={handleSaveChanges} style={{ marginRight: '10px' }}>Save Changes</button>}
                                 <button type="button" className="btn btn-secondary" onClick={onClose}>Close</button>
                             </div>
