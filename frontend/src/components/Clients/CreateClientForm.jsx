@@ -20,6 +20,12 @@ const PdfViewerModal = ({ file, onClose }) => {
     );
 };
 
+const FullScreenLoader = () => (
+    <div className="loader-backdrop">
+        <div className="loader"></div>
+    </div>
+);
+
 const MultiStepForm = ({ onClientAdded }) => {
     const [step, setStep] = useState(1);
     const [formData, setFormData] = useState({
@@ -146,7 +152,8 @@ const MultiStepForm = ({ onClientAdded }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+        setIsLoading(true);
+
         const data = new FormData();
         for (const key in formData) {
             data.append(key, formData[key]);
@@ -175,6 +182,8 @@ const MultiStepForm = ({ onClientAdded }) => {
         } finally {
             setIsLoading(false);
         }
+
+        setIsLoading(false);
     };
     const renderStep = () => {
         switch (step) {
@@ -388,6 +397,7 @@ const MultiStepForm = ({ onClientAdded }) => {
     
     return (
         <div className="card">
+            {isLoading && <FullScreenLoader />}
             <form onSubmit={handleSubmit}>
                 <div className="multi-step-form-progress">
                     <div className={`progress-step ${step >= 1 ? 'active' : ''}`}>Organisation</div>

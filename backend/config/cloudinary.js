@@ -10,14 +10,21 @@ cloudinary.config({
 });
 
 const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: 'kyc_documents',
-    allowed_formats: ['jpeg', 'png', 'jpg', 'pdf'],
-    resource_type: 'auto',
-    type: 'upload' // public assets (not 'authenticated' or 'private')
-  }
+  cloudinary,
+  params: async (req, file) => {
+    let resourceType = 'image';
+    if (file.mimetype === 'application/pdf') {
+      resourceType = 'raw'; // store PDFs as raw
+    }
+    return {
+      folder: 'kyc_documents',
+      resource_type: resourceType,
+      public_id: Date.now() + '-' + file.originalname.split('.')[0],
+    };
+  },
 });
+
+
 
 const upload = multer({ storage: storage });
 

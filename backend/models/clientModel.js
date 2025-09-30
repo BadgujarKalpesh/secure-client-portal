@@ -5,30 +5,22 @@ const create = async (clientData, documents) => {
     try {
         await client.query('BEGIN');
 
+        // 1. Generate the next customer_id starting from 369001
         const lastIdRes = await client.query("SELECT customer_id FROM clients ORDER BY id DESC LIMIT 1");
-        let nextId = 1;
+        let nextId = 369001; // Set the starting ID
         if (lastIdRes.rows.length > 0 && lastIdRes.rows[0].customer_id) {
             const parsedId = parseInt(lastIdRes.rows[0].customer_id, 10);
-            if (!isNaN(parsedId)) {
+            if (!isNaN(parsedId)) { // Check if parsing was successful
                 nextId = parsedId + 1;
             }
         }
         const customerId = String(nextId).padStart(6, '0');
 
+        // 2. Insert the new client
         const {
-            organisationName,
-            organisationAddress,
-            organisationDomainId,
-            natureOfBusiness,
-            authorisedSignatoryFullName,
-            authorisedSignatoryMobile,
-            authorisedSignatoryEmail,
-            authorisedSignatoryDesignation,
-            billingContactName,
-            billingContactNumber,
-            billingContactEmail,
-            organisationType,
-            accountManagerId
+            organisationName, organisationAddress, organisationDomainId, natureOfBusiness,
+            authorisedSignatoryFullName, authorisedSignatoryMobile, authorisedSignatoryEmail, authorisedSignatoryDesignation,
+            billingContactName, billingContactNumber, billingContactEmail, organisationType, accountManagerId
         } = clientData;
 
         const clientQuery = `
@@ -38,25 +30,23 @@ const create = async (clientData, documents) => {
                 nature_of_business, authorised_signatory_full_name,
                 authorised_signatory_mobile, authorised_signatory_email,
                 authorised_signatory_designation, billing_contact_name,
-                billing_contact_number, billing_contact_email, organisation_type,
-                account_manager_id
+                billing_contact_number, billing_contact_email, organisation_type, account_manager_id
             ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
             RETURNING *;
         `;
         const clientValues = [
-            customerId, authorisedSignatoryFullName, authorisedSignatoryEmail,
-            authorisedSignatoryMobile, organisationName, organisationAddress,
-            organisationName, organisationAddress, organisationDomainId,
-            natureOfBusiness, authorisedSignatoryFullName,
-            authorisedSignatoryMobile, authorisedSignatoryEmail,
-            authorisedSignatoryDesignation, billingContactName,
+            customerId, authorisedSignatoryFullName, authorisedSignatoryEmail, authorisedSignatoryMobile, organisationName, organisationAddress,
+            organisationName, organisationAddress, organisationDomainId, natureOfBusiness, authorisedSignatoryFullName,
+            authorisedSignatoryMobile, authorisedSignatoryEmail, authorisedSignatoryDesignation, billingContactName,
             billingContactNumber, billingContactEmail, organisationType,
-            accountManagerId
+            // Convert empty string to null for the database
+            accountManagerId ? parseInt(accountManagerId, 10) : null
         ];
         
         const clientResult = await client.query(clientQuery, clientValues);
         const newClient = clientResult.rows[0];
 
+        // 3. Insert documents
         if (documents && documents.length > 0) {
             const documentQuery = 'INSERT INTO documents (client_id, url, public_id, document_type, document_unique_id) VALUES ($1, $2, $3, $4, $5)';
             for (const doc of documents) {

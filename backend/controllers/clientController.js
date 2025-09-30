@@ -21,9 +21,7 @@ const createClient = async (req, res) => {
 
                     documents.push({
                         document_type: fieldName,
-                        url: (file.path || '')
-                            .replace('http://', 'https://')
-                            .replace(/\/image\/upload\/(.*\.pdf)$/i, '/raw/upload/$1'),
+                        url: (file.path || '').replace('http://', 'https://'),
                         public_id: file.filename,
                         document_unique_id: uniqueId || 'N/A'
                     });
@@ -140,7 +138,6 @@ const viewClientDocument = async (req, res) => {
     }
 };
 
-// backend/controllers/clientController.js
 const streamClientDocument = async (req, res) => {
 	try {
 		const { docId } = req.params;
@@ -149,25 +146,18 @@ const streamClientDocument = async (req, res) => {
 
 		const publicId = document.public_id;
 
-		// Build multiple candidate URLs to cover different resource types/storage variants
+		// Candidate URLs
 		const candidates = [];
 		if (document.url) {
 			const normalized = (document.url || '').replace('http://', 'https://');
 			candidates.push(normalized);
-			// If the stored URL was saved under image but is a PDF, also try raw
-			if (/\/image\/upload\//.test(normalized) && /\.pdf(\?|$)/i.test(normalized)) {
-				candidates.push(normalized.replace('/image/upload/', '/raw/upload/'));
-			}
-			// If the stored URL is raw, try image/pdf too
-			if (/\/raw\/upload\//.test(normalized)) {
-				candidates.push(normalized.replace('/raw/upload/', '/image/upload/'));
-			}
 		}
-		// Cloudinary variants built from public_id
+
+		// ✅ Always try auto first
 		candidates.push(
 			cloudinary.url(publicId, { resource_type: 'auto',  type: 'upload', secure: true }),
-			cloudinary.url(publicId, { resource_type: 'raw',   type: 'upload', secure: true }),
-			cloudinary.url(publicId, { resource_type: 'image', type: 'upload', secure: true, format: 'pdf' })
+			cloudinary.url(publicId, { resource_type: 'image', type: 'upload', secure: true, format: 'pdf' }),
+			cloudinary.url(publicId, { resource_type: 'raw',   type: 'upload', secure: true })
 		);
 
 		const fetchAndPipe = (targetUrl, redirectCount = 0, next) => {
@@ -208,6 +198,7 @@ const streamClientDocument = async (req, res) => {
 		res.status(500).json({ message: 'Server error while streaming document.' });
 	}
 };
+
 
 
 module.exports = {
