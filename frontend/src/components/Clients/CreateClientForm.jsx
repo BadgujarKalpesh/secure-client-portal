@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
+import { state_arr, s_a } from '../../data/cities'; 
 
 const PdfViewerModal = ({ file, onClose }) => {
     if (!file) return null;
@@ -31,6 +32,9 @@ const MultiStepForm = ({ onClientAdded }) => {
     const [formData, setFormData] = useState({
         organisationName: '',
         organisationAddress: '',
+        city: '',
+        state: '',
+        pincode: '',
         organisationDomainId: '',
         natureOfBusiness: '',
         authorisedSignatoryFullName: '',
@@ -53,11 +57,41 @@ const MultiStepForm = ({ onClientAdded }) => {
     const [isLoading, setIsLoading] = useState(false);
     const [pdfPreview, setPdfPreview] = useState(null);
     const [accountManagers, setAccountManagers] = useState([]);
+    const [cities, setCities] = useState([]);
 
     const countryCodes = [
         { name: 'India', code: '+91' },
         { name: 'USA', code: '+1' },
     ];
+
+    const handleAddressChange = (e) => {
+        const { name, value } = e.target;
+        
+        let city = formData.city;
+        let state = formData.state;
+        let pincode = formData.pincode;
+
+        if (name === 'state') {
+            state = value;
+            const stateIndex = state_arr.indexOf(value) + 1;
+            const city_arr = s_a[stateIndex].split(" | ");
+            setCities(city_arr);
+            city = ''; // Reset city when state changes
+        } else if (name === 'city') {
+            city = value;
+        } else if (name === 'pincode') {
+            pincode = value;
+        }
+
+        setFormData(prev => ({
+            ...prev,
+            state: state,
+            city: city,
+            pincode: pincode,
+            organisationAddress: `${city}, ${state}, ${pincode}`
+        }));
+    };
+
 
     useEffect(() => {
         const fetchAccountManagers = async () => {
@@ -194,22 +228,33 @@ const MultiStepForm = ({ onClientAdded }) => {
                         <div className="form-grid">
                             <div className="form-group">
                                 <label>Organisation Name</label>
-                                <input name="organisationName" value={formData.organisationName} onChange={handleTextChange} className="form-control" />
-                                {errors.organisationName && <p className="error-message">{errors.organisationName}</p>}
+                                <input name="organisationName" value={formData.organisationName} onChange={handleTextChange} className="form-control" required />
                             </div>
                             <div className="form-group">
-                                <label>Organisation Address</label>
-                                <input name="organisationAddress" value={formData.organisationAddress} onChange={handleTextChange} className="form-control" />
-                                {errors.organisationAddress && <p className="error-message">{errors.organisationAddress}</p>}
+                                <label>State</label>
+                                <select name="state" value={formData.state} onChange={handleAddressChange} className="form-control" required>
+                                    <option value="">Select State</option>
+                                    {state_arr.map(state => <option key={state} value={state}>{state}</option>)}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>City</label>
+                                <select name="city" value={formData.city} onChange={handleAddressChange} className="form-control" required>
+                                    <option value="">Select City</option>
+                                    {cities.map(city => <option key={city} value={city}>{city}</option>)}
+                                </select>
+                            </div>
+                             <div className="form-group">
+                                <label>Pincode</label>
+                                <input name="pincode" value={formData.pincode} onChange={handleAddressChange} className="form-control" />
                             </div>
                             <div className="form-group">
                                 <label>Organisation Domain ID</label>
-                                <input name="organisationDomainId" value={formData.organisationDomainId} onChange={handleTextChange} className="form-control" />
-                                {errors.organisationDomainId && <p className="error-message">{errors.organisationDomainId}</p>}
+                                <input name="organisationDomainId" value={formData.organisationDomainId} onChange={handleTextChange} className="form-control" required />
                             </div>
                             <div className="form-group">
                                 <label>Nature of Business</label>
-                                <select name="natureOfBusiness" value={formData.natureOfBusiness} onChange={handleTextChange} className="form-control">
+                                <select name="natureOfBusiness" value={formData.natureOfBusiness} onChange={handleTextChange} className="form-control" required>
                                     <option value="">Select...</option>
                                     <option>Edtech</option>
                                     <option>Healthcare</option>
@@ -219,12 +264,8 @@ const MultiStepForm = ({ onClientAdded }) => {
                                     <option>Insurance</option>
                                     <option>Banking</option>
                                     <option>Finance</option>
-                                    <option>Automobile</option>
-                                    <option>Travel</option>
-                                    <option>BPO</option>
                                     <option>Other</option>
                                 </select>
-                                {errors.natureOfBusiness && <p className="error-message">{errors.natureOfBusiness}</p>}
                             </div>
                         </div>
                     </>
