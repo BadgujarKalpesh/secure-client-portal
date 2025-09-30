@@ -9,8 +9,9 @@ import CreateClientPage from './pages/CreateClientPage';
 import MfaSettingsPage from './pages/MfaSettingsPage';
 import ViewerMfaSettingsPage from './pages/ViewerMfaSettingsPage';
 import SuperAdminMfaSettingsPage from './pages/SuperAdminMfaSettingsPage';
-import ManageUsersPage from './pages/ManageUsersPage'; // <-- IMPORT NEW PAGE
+import ManageUsersPage from './pages/ManageUsersPage';
 import AccountManagerPage from './pages/AccountManagerPage';
+import AuditTrailPage from './pages/AuditTrailPage';
 
 function App() {
   return (
@@ -25,8 +26,9 @@ function App() {
           <Route path="/settings/mfa" element={<MfaSettingsPage />} />
           <Route path="/settings/viewer-mfa" element={<ViewerMfaSettingsPage />} />
           <Route path="/settings/superadmin-mfa" element={<SuperAdminMfaSettingsPage />} />
-          <Route path="/manage-users" element={<ManageUsersPage />} /> {/* <-- NEW ROUTE */}
+          <Route path="/manage-users" element={<ManageUsersPage />} />
           <Route path="/account-managers" element={<AccountManagerPage />} />
+          <Route path="/audit-trail" element={<AuditTrailPage />} />
         </Route>
       </Route>
 

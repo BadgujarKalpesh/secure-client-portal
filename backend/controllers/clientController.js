@@ -1,6 +1,8 @@
 const Client = require('../models/clientModel');
 const cloudinary = require('cloudinary').v2;
 const https = require('https');
+const logAction = require('../utils/auditLogger');
+
 
 const createClient = async (req, res) => {
     try {
