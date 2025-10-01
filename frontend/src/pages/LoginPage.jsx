@@ -60,13 +60,14 @@ const LoginPage = () => {
         setError('');
         try {
             let payload;
+            const normalizedMfaToken = (mfaToken || '').trim().replace(/\D/g, '');
             if (publicKey) {
                 const encUsername = await rsaOaepEncryptToBase64(publicKey, username);
                 const encPassword = await rsaOaepEncryptToBase64(publicKey, password);
-                payload = { encUsername, encPassword, mfaToken, role };
+                payload = { encUsername, encPassword, mfaToken: normalizedMfaToken, role };
             } else {
                 // Legacy fallback if key not loaded; remove if you want to enforce E2E encryption strictly
-                payload = { username, password, mfaToken, role };
+                payload = { username, password, mfaToken: normalizedMfaToken, role };
             }
 
             const response = await api.post('/auth/login', payload);
@@ -103,11 +104,27 @@ const LoginPage = () => {
                 </div>
                 
                 <form onSubmit={handleSubmit}>
-                    <div className="role-toggle-container">
-                        <div style={toggleButtonStyle('superAdmin')} onClick={() => setRole('superAdmin')}>Super Admin</div>
-                        <div style={toggleButtonStyle('admin')} onClick={() => setRole('admin')}>Admin</div>
-                        <div style={toggleButtonStyle('viewer')} onClick={() => setRole('viewer')}>Viewer</div>
-                    </div>
+                    {!mfaRequired ? (
+                        <div className="role-toggle-container">
+                            <div style={toggleButtonStyle('superAdmin')} onClick={() => setRole('superAdmin')}>Super Admin</div>
+                            <div style={toggleButtonStyle('admin')} onClick={() => setRole('admin')}>Admin</div>
+                            <div style={toggleButtonStyle('viewer')} onClick={() => setRole('viewer')}>Viewer</div>
+                        </div>
+                    ) : (
+                        <div className="role-toggle-container" style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+                            <div style={{
+                                padding: '12px 20px',
+                                border: 'none',
+                                background: 'var(--primary-blue)',
+                                color: 'white',
+                                fontWeight: '600',
+                                borderRadius: '8px',
+                                pointerEvents: 'none'
+                            }}>
+                                {role === 'superAdmin' ? 'Super Admin' : role === 'admin' ? 'Admin' : 'Viewer'}
+                            </div>
+                        </div>
+                    )}
 
                     {!mfaRequired ? (
                         <>

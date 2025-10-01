@@ -52,10 +52,13 @@ const loginUser = async (req, res) => {
             if (!mfaToken) {
                 return res.status(200).json({ mfaRequired: true });
             }
+            // Normalize token and allow slight clock drift
+            const normalizedToken = String(mfaToken).trim().replace(/\D/g, '');
             const isVerified = speakeasy.totp.verify({
                 secret: user.mfa_secret,
                 encoding: 'ascii',
-                token: mfaToken,
+                token: normalizedToken,
+                window: 1,
             });
             if (!isVerified) {
                 return res.status(401).json({ message: 'Invalid MFA token' });
@@ -109,10 +112,12 @@ const verifyAndEnableAdminMfa = async (req, res) => {
         return res.status(400).json({ message: 'MFA setup has not been initiated.' });
     }
 
+    const adminNormalizedToken = String(mfaToken || '').trim().replace(/\D/g, '');
     const isVerified = speakeasy.totp.verify({
         secret: admin.mfa_temp_secret,
         encoding: 'ascii',
-        token: mfaToken,
+        token: adminNormalizedToken,
+        window: 1,
     });
 
     if (isVerified) {
@@ -152,10 +157,12 @@ const verifyAndEnableViewerMfa = async (req, res) => {
         return res.status(400).json({ message: 'MFA setup has not been initiated.' });
     }
 
+    const viewerNormalizedToken = String(mfaToken || '').trim().replace(/\D/g, '');
     const isVerified = speakeasy.totp.verify({
         secret: viewer.mfa_temp_secret,
         encoding: 'ascii',
-        token: mfaToken,
+        token: viewerNormalizedToken,
+        window: 1,
     });
 
     if (isVerified) {
@@ -188,10 +195,12 @@ const verifyAndEnableSuperAdminMfa = async (req, res) => {
         return res.status(400).json({ message: 'MFA setup has not been initiated.' });
     }
 
+    const superAdminNormalizedToken = String(mfaToken || '').trim().replace(/\D/g, '');
     const isVerified = speakeasy.totp.verify({
         secret: superAdmin.mfa_temp_secret,
         encoding: 'ascii',
-        token: mfaToken,
+        token: superAdminNormalizedToken,
+        window: 1,
     });
 
     if (isVerified) {
