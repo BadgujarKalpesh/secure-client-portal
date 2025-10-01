@@ -2,25 +2,26 @@ import React, { useState, useEffect } from 'react';
 import api from '../../api/axiosConfig';
 import { useAuth } from '../../context/AuthContext';
 
-const PdfViewerModal = ({ fileUrl, onClose }) => {
-    if (!fileUrl) return null;
+// const PdfViewerModal = ({ fileUrl, onClose }) => {
+//     if (!fileUrl) return null;
 
-    return (
-        <div className="modal-backdrop" onClick={onClose}>
-            <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                    <h3>PDF Preview</h3>
-                    <button onClick={onClose} className="close-button">&times;</button>
-                </div>
-                <div className="modal-body" style={{ height: '70vh' }}>
-                    <iframe src={fileUrl} width="100%" height="100%" title="PDF Preview" style={{ border: 'none' }} />
-                </div>
-            </div>
-        </div>
-    );
-};
+//     return (
+//         <div className="modal-backdrop" onClick={onClose}>
+//             <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
+//                 <div className="modal-header">
+//                     <h3>PDF Preview</h3>
+//                     <button onClick={onClose} className="close-button">&times;</button>
+//                 </div>
+//                 <div className="modal-body" style={{ height: '70vh' }}>
+//                     <iframe src={fileUrl} width="100%" height="100%" title="PDF Preview" style={{ border: 'none' }} />
+//                 </div>
+//             </div>
+//         </div>
+//     );
+// };
 
 // in EditClientModal.jsx
+
 const DocumentViewerModal = ({ fileUrl, mime, onClose }) => {
     if (!fileUrl) return null;
 
@@ -75,33 +76,33 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
     }, [client.id]);
 
     const handleViewPdf = async (docId) => {
-        try {
-            const response = await api.get(`/clients/documents/${docId}/view`, {
-                responseType: 'blob',
-            });
-    
-            let mime = response.headers['content-type'] || '';
-            let blob = response.data;
-    
-            // If server sent generic type, sniff for PDF magic header "%PDF"
-            if (!mime || mime === 'application/octet-stream') {
-                const arrBuf = await blob.arrayBuffer();
-                const bytes = new Uint8Array(arrBuf.slice(0, 5));
-                const header = String.fromCharCode(...bytes); // "%PDF-"
-                if (header === '%PDF-') {
-                    mime = 'application/pdf';
-                }
-                blob = new Blob([arrBuf], { type: mime || 'application/octet-stream' });
+    try {
+        const response = await api.get(`/clients/documents/${docId}/view`, {
+            responseType: 'blob',
+        });
+
+        let mime = response.headers['content-type'] || '';
+        let blob = response.data;
+
+        // If server sent generic type, sniff for PDF magic header "%PDF"
+        if (!mime || mime === 'application/octet-stream') {
+            const arrBuf = await blob.arrayBuffer();
+            const bytes = new Uint8Array(arrBuf.slice(0, 5));
+            const header = String.fromCharCode(...bytes); // "%PDF-"
+            if (header === '%PDF-') {
+                mime = 'application/pdf';
             }
-    
-            const fileURL = URL.createObjectURL(blob);
-            setPreviewMime(mime);
-            setPdfPreviewUrl(fileURL);
-        } catch (err) {
-            console.error("Error fetching document for preview:", err);
-            setError("Could not load the document for preview.");
+            blob = new Blob([arrBuf], { type: mime || 'application/octet-stream' });
         }
-    };
+
+        const fileURL = URL.createObjectURL(blob);
+        setPreviewMime(mime);
+        setPdfPreviewUrl(fileURL);
+    } catch (err) {
+        console.error("Error fetching document for preview:", err);
+        setError("Could not load the document for preview.");
+    }
+};
     
     const handleChange = (e) => {
         const { name, value } = e.target;

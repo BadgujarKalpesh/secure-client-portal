@@ -110,11 +110,15 @@ const deleteClient = async (req, res) => {
 const getClientDocuments = async (req, res) => {
     try {
         const documents = await Client.findDocsById(req.params.id);
-        const normalized = documents.map(d => {
-            let url = (d.url || '').replace('http://', 'https://');
-            return { ...d, url };
-        });
-        res.status(200).json(normalized);
+        // Remove sensitive URL and public_id from the response
+        const sanitizedDocuments = documents.map(doc => ({
+            id: doc.id,
+            client_id: doc.client_id,
+            document_type: doc.document_type,
+            created_at: doc.created_at,
+            document_unique_id: doc.document_unique_id
+        }));
+        res.status(200).json(sanitizedDocuments);
     } catch (error) {
         console.error(`Error fetching documents for client ${req.params.id}:`, error);
         res.status(500).json({ message: 'Server Error' });
@@ -146,67 +150,6 @@ const viewClientDocument = async (req, res) => {
         res.status(500).json({ message: 'Server Error' });
     }
 };
-
-// const streamClientDocument = async (req, res) => {
-// 	try {
-// 		const { docId } = req.params;
-// 		const document = await Client.findDocumentById(docId);
-// 		if (!document) return res.status(404).json({ message: 'Document not found' });
-
-// 		const publicId = document.public_id;
-
-// 		// Candidate URLs
-// 		const candidates = [];
-// 		if (document.url) {
-// 			const normalized = (document.url || '').replace('http://', 'https://');
-// 			candidates.push(normalized);
-// 		}
-
-// 		// ✅ Always try auto first
-// 		candidates.push(
-// 			cloudinary.url(publicId, { resource_type: 'auto',  type: 'upload', secure: true }),
-// 			cloudinary.url(publicId, { resource_type: 'image', type: 'upload', secure: true, format: 'pdf' }),
-// 			cloudinary.url(publicId, { resource_type: 'raw',   type: 'upload', secure: true })
-// 		);
-
-// 		const fetchAndPipe = (targetUrl, redirectCount = 0, next) => {
-// 			if (redirectCount > 5) return next(new Error('Too many redirects'));
-// 			const u = new URL(targetUrl);
-// 			const mod = u.protocol === 'https:' ? require('https') : require('http');
-
-// 			const reqCloud = mod.get(targetUrl, { headers: { Accept: 'application/pdf,*/*' } }, (cloudRes) => {
-// 				if ([301,302,303,307,308].includes(cloudRes.statusCode || 0)) {
-// 					const loc = cloudRes.headers.location;
-// 					if (!loc) return next(new Error('Redirect without location'));
-// 					return fetchAndPipe(new URL(loc, targetUrl).toString(), redirectCount + 1, next);
-// 				}
-// 				if ((cloudRes.statusCode || 0) !== 200) return next(new Error(String(cloudRes.statusCode)));
-
-// 				const ctype = cloudRes.headers['content-type'] || 'application/pdf';
-// 				const clen  = cloudRes.headers['content-length'];
-// 				res.setHeader('Content-Type', ctype);
-// 				if (clen) res.setHeader('Content-Length', clen);
-// 				res.setHeader('Cache-Control', 'private, max-age=0');
-// 				res.setHeader('Content-Disposition', 'inline; filename="document.pdf"');
-// 				cloudRes.pipe(res);
-// 			});
-// 			reqCloud.on('error', () => next(new Error('fetch error')));
-// 		};
-
-// 		let idx = 0;
-// 		const tryNext = () => {
-// 			if (idx >= candidates.length) {
-// 				return res.status(502).json({ message: 'Could not fetch document from host.' });
-// 			}
-// 			const url = candidates[idx++];
-// 			fetchAndPipe(url, 0, () => tryNext());
-// 		};
-// 		tryNext();
-// 	} catch (error) {
-// 		console.error('Error streaming document:', error);
-// 		res.status(500).json({ message: 'Server error while streaming document.' });
-// 	}
-// };
 
 const streamClientDocument = async (req, res) => {
     try {
