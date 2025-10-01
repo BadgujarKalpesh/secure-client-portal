@@ -125,9 +125,9 @@ const MultiStepForm = ({ onClientAdded }) => {
                 return;
             }
 
-            const maxSize = 5 * 1024 * 1024; // 5MB
+            const maxSize = 20 * 1024 * 1024;
             if (file.size > maxSize) {
-                setErrors(prev => ({ ...prev, [name]: 'File is too large. Maximum size is 5MB.' }));
+                setErrors(prev => ({ ...prev, [name]: 'File is too large. Maximum size is 20MB.' }));
                 e.target.value = null;
                 return;
             }
@@ -213,7 +213,7 @@ const MultiStepForm = ({ onClientAdded }) => {
                 setDocumentIds({});
                 setMessage('');
                 if(onClientAdded) onClientAdded();
-            }, 2000);
+            }, 2500);
         } catch (err) {
             setErrors(err.response?.data?.message || 'Error creating client.');
         } finally {

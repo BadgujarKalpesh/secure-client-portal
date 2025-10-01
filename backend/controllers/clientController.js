@@ -217,14 +217,17 @@ const streamClientDocument = async (req, res) => {
             return res.status(404).json({ message: 'Document not found' });
         }
 
-        res.setHeader('Content-Type', 'application/pdf');
-
-        // Securely fetch the document from Cloudinary's URL on the server-side
-        // and pipe (stream) it directly to the client's browser.
         await logAction(req, 'VIEW_DOCUMENT', `Viewed document ID ${docId} for client ID ${document.client_id}`);
 
-        https.get(document.url, (stream) => {
-            stream.pipe(res);
+        https.get(document.url, (upstream) => {
+            const ctype = upstream.headers['content-type'] || 'application/octet-stream';
+            const clen  = upstream.headers['content-length'];
+            res.setHeader('Content-Type', ctype);
+            if (clen) res.setHeader('Content-Length', clen);
+            res.setHeader('Cache-Control', 'private, max-age=0');
+            res.setHeader('Content-Disposition', 'inline; filename="document"');
+
+            upstream.pipe(res);
         }).on('error', (e) => {
             console.error('Error fetching from Cloudinary:', e);
             res.status(502).json({ message: 'Failed to fetch the document.' });

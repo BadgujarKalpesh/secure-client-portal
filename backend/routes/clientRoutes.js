@@ -27,19 +27,30 @@ const documentUploadFields = [
     { name: 'boardResolution', maxCount: 1 }
 ];
 
+// Helper to handle Multer errors cleanly
+const uploadWithErrorsHandled = (req, res, next) => {
+    upload.fields(documentUploadFields)(req, res, function (err) {
+        if (!err) return next();
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(413).json({ message: 'File too large. Max 20MB per file.' });
+        }
+        return res.status(400).json({ message: err.message || 'Upload failed.' });
+    });
+};
+
 router.route('/')
-    .post(adminOnly, upload.fields(documentUploadFields), createClient)
+    .post(adminOnly, uploadWithErrorsHandled, createClient)
     .get(getAllClients);
 
 router.route('/:id')
     .get(getClientById)
-    .put(adminOnly, updateClient)
+    .put(adminOnly, uploadWithErrorsHandled, updateClient) // if updating files also
     .delete(adminOnly, deleteClient);
 
-    router.put('/:id/status', updateClientStatus);
+router.put('/:id/status', updateClientStatus);
 
-    router.get('/:id/documents', getClientDocuments);
-    router.get('/:id/documents/:docId/view', viewClientDocument);
+router.get('/:id/documents', getClientDocuments);
+router.get('/:id/documents/:docId/view', viewClientDocument);
 router.get('/documents/:docId/view', protect, mfaEnabled, streamClientDocument);
 
 module.exports = router;

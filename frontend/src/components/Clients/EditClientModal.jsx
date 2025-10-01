@@ -20,6 +20,36 @@ const PdfViewerModal = ({ fileUrl, onClose }) => {
     );
 };
 
+// in EditClientModal.jsx
+const DocumentViewerModal = ({ fileUrl, mime, onClose }) => {
+    if (!fileUrl) return null;
+
+    const isPdf = (mime || '').toLowerCase().startsWith('application/pdf');
+    const isImage = (mime || '').startsWith('image/');
+
+    return (
+        <div className="modal-backdrop" onClick={onClose}>
+            <div className="modal-content modal-lg" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header">
+                    <h3>Document Preview</h3>
+                    <button onClick={onClose} className="close-button">&times;</button>
+                </div>
+                <div className="modal-body" style={{ height: '70vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    {isPdf && (
+                        <iframe src={fileUrl} width="100%" height="100%" title="Document Preview" style={{ border: 'none' }} />
+                    )}
+                    {isImage && (
+                        <img src={fileUrl} alt="Document Preview" style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                    )}
+                    {!isPdf && !isImage && (
+                        <a href={fileUrl} download>Download document</a>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const EditClientModal = ({ client, onClose, onUpdate }) => {
     const { user } = useAuth();
     const isAdmin = user?.role === 'admin';
@@ -30,6 +60,7 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
     const [pdfPreviewUrl, setPdfPreviewUrl] = useState(null);
+    const [previewMime, setPreviewMime] = useState(null);
 
     useEffect(() => {
         const fetchDocuments = async () => {
@@ -46,19 +77,29 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
     const handleViewPdf = async (docId) => {
         try {
             const response = await api.get(`/clients/documents/${docId}/view`, {
-                responseType: 'blob', // This is crucial for handling the file stream
+                responseType: 'blob',
             });
-            // Create a Blob from the PDF stream
-            const file = new Blob(
-              [response.data], 
-              {type: 'application/pdf'}
-            );
-            // Build a URL from the file
-            const fileURL = URL.createObjectURL(file);
+    
+            let mime = response.headers['content-type'] || '';
+            let blob = response.data;
+    
+            // If server sent generic type, sniff for PDF magic header "%PDF"
+            if (!mime || mime === 'application/octet-stream') {
+                const arrBuf = await blob.arrayBuffer();
+                const bytes = new Uint8Array(arrBuf.slice(0, 5));
+                const header = String.fromCharCode(...bytes); // "%PDF-"
+                if (header === '%PDF-') {
+                    mime = 'application/pdf';
+                }
+                blob = new Blob([arrBuf], { type: mime || 'application/octet-stream' });
+            }
+    
+            const fileURL = URL.createObjectURL(blob);
+            setPreviewMime(mime);
             setPdfPreviewUrl(fileURL);
         } catch (err) {
-            console.error("Error fetching PDF for preview:", err);
-            setError("Could not load the PDF for preview.");
+            console.error("Error fetching document for preview:", err);
+            setError("Could not load the document for preview.");
         }
     };
     
@@ -157,7 +198,13 @@ const EditClientModal = ({ client, onClose, onUpdate }) => {
                     </form>
                 </div>
             </div>
-            {pdfPreviewUrl && <PdfViewerModal fileUrl={pdfPreviewUrl} onClose={() => setPdfPreviewUrl(null)} />}
+            {pdfPreviewUrl && (
+            <DocumentViewerModal
+                fileUrl={pdfPreviewUrl}
+                mime={previewMime}
+                onClose={() => { URL.revokeObjectURL(pdfPreviewUrl); setPdfPreviewUrl(null); }}
+            />
+            )}        
         </>
     );
 };

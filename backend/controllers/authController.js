@@ -62,7 +62,12 @@ const loginUser = async (req, res) => {
             }
         }
 
-        await logAction(req, 'LOGIN_SUCCESS', `User ${user.username} logged in successfully.`);
+        // Pass the authenticated user object directly to the audit logger
+        await logAction(req, 'LOGIN_SUCCESS', `User ${user.username} logged in successfully.`, {
+            id: user.id,
+            username: user.username,
+            role: role
+        });
 
         res.status(200).json({
             message: 'Login successful',

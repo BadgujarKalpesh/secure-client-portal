@@ -9,6 +9,20 @@ cloudinary.config({
   secure: true // ensure https URLs
 });
 
+function toSafePublicId(originalname) {
+  // Remove extension
+  const base = (originalname || '').replace(/\.[^/.]+$/, '');
+  // Lowercase, replace invalid chars with '-', trim dashes, collapse repeats
+  const safe = base
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')       // keep only a-z 0-9 _ -
+    .replace(/^-+|-+$/g, '')             // trim leading/trailing dashes
+    .replace(/-+/g, '-');                // collapse multiple dashes
+  // Prefix with timestamp and cap length
+  const id = `${Date.now()}-${safe || 'file'}`.slice(0, 120);
+  return id;
+}
+
 const storage = new CloudinaryStorage({
   cloudinary,
   params: async (req, file) => {
@@ -19,12 +33,13 @@ const storage = new CloudinaryStorage({
     return {
       folder: 'kyc_documents',
       resource_type: resourceType,
-      public_id: Date.now() + '-' + file.originalname.split('.')[0],
+      public_id: toSafePublicId(file.originalname), // sanitized public_id
+      use_filename: false,
+      unique_filename: false,
+      overwrite: false
     };
   },
 });
-
-
 
 const upload = multer({ storage: storage });
 
