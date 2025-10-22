@@ -180,6 +180,17 @@ const findDocumentById = async (docId) => {
     return rows[0];
 };
 
+const updateDocumentPublicId = async (clientId, oldPublicId, newPublicId, newUrl) => {
+    const query = `
+        UPDATE documents
+        SET public_id = $1, url = $2
+        WHERE client_id = $3 AND public_id = $4
+        RETURNING *;
+    `;
+    const { rows } = await pool.query(query, [newPublicId, newUrl, clientId, oldPublicId]);
+    return rows[0];
+};
+
 module.exports = {
     create,
     findAll,
@@ -190,4 +201,5 @@ module.exports = {
     findDocsById,
     findDocByDocId,
     findDocumentById,
+    updateDocumentPublicId,
 };

@@ -50,7 +50,6 @@ const superAdminOnly = (req, res, next) => {
     }
 };
 
-// NEW MIDDLEWARE FOR ADMIN AND SUPER ADMIN ACCESS
 const adminOrSuperAdmin = (req, res, next) => {
     if (req.user && (req.user.role === 'admin' || req.user.role === 'superAdmin')) {
         next();

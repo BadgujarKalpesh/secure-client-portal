@@ -24,14 +24,46 @@ const createClient = async (req, res) => {
                     documents.push({
                         document_type: fieldName,
                         url: (file.path || '').replace('http://', 'https://'),
-                        public_id: file.filename,
-                        document_unique_id: uniqueId || 'N/A'
+                        public_id: file.filename,              // current Cloudinary public_id
+                        document_unique_id: uniqueId || 'N/A',
+                        resource_type: file.mimetype === 'application/pdf' ? 'raw' : 'image'
                     });
                 }
             }
         }
         
         const newClient = await Client.create(clientData, documents);
+
+        for (const doc of documents) {
+            const oldPublicId = doc.public_id; // e.g., 'kyc_documents/123456789-file'
+            const resourceType = doc.resource_type || 'image';
+            const basename = String(oldPublicId).split('/').pop();
+            const newPublicId = `kyc_documents/${newClient.customer_id}/${basename}`;
+        
+            try {
+                // Move asset into per-client folder
+                await cloudinary.uploader.rename(oldPublicId, newPublicId, {
+                    resource_type: resourceType,
+                    to_type: 'upload',
+                    overwrite: false,
+                });
+        
+                // Build a secure URL for the new location
+                const newUrl = cloudinary.url(newPublicId, {
+                    resource_type: resourceType,
+                    type: 'upload',
+                    secure: true,
+                    // Optionally force format for PDFs: format: resourceType === 'raw' ? 'pdf' : undefined
+                });
+        
+                // Persist new public_id and URL
+                await Client.updateDocumentPublicId(newClient.id, oldPublicId, newPublicId, newUrl);
+            } catch (e) {
+                // If rename fails, leave original location and continue
+                console.error('Cloudinary rename failed for', oldPublicId, '->', newPublicId, e);
+            }
+        }
+        
         await logAction(req, 'CREATE_CLIENT', `Created new client ID ${newClient.customer_id} (${newClient.organisation_name})`);
 
         res.status(201).json(newClient);
